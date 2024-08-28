@@ -17,18 +17,27 @@ export default function Home() {
   const params = useSearchParams()
   const [existingSessionId] = useState(params.get('sessionId'))
   const [sessionId] = useState<string>(existingSessionId ?? uuidv4())
-  router.replace(`/?sessionId=${sessionId}`)
+
+  useEffect(() => {
+    router.push(`/?sessionId=${sessionId}`)
+  }, [router, sessionId])
 
   const [dragActive, setDragActive] = useState(false)
   const inputRef = useRef<any>(null)
   const [filesToUpload, setFilesToUpload] = useState<File[]>([])
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string }[]>([])
-  const allFiles = [...filesToUpload, ...uploadedFiles].filter(
-    (file, index, array) => array.indexOf(file) === index
-  )
+  // const [refresh, setRefresh] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
+  /**
+   * Match audio files with text files.
+   */
   const matches = useMemo(() => {
+    const allFiles = [...uploadedFiles, ...filesToUpload].filter(
+      (file, index, array) =>
+        array.findIndex((f) => f.name === file.name) === index
+    )
+
     const audioFiles: Set<string> = new Set()
     const textFiles: Set<string> = new Set()
 
@@ -58,34 +67,42 @@ export default function Home() {
       matchedFiles.push([undefined, textFile + '.txt'])
     })
 
-    return matchedFiles
-  }, [allFiles])
+    // Sort matches alphabetically.
+    return matchedFiles.sort((a, b) => {
+      if (a[0] && b[0]) {
+        return a[0].localeCompare(b[0])
+      } else if (a[0]) {
+        return -1
+      } else if (b[0]) {
+        return 1
+      } else if (a[1] && b[1]) {
+        return a[1].localeCompare(b[1])
+      } else if (a[1]) {
+        return -1
+      } else if (b[1]) {
+        return 1
+      } else {
+        return 0
+      }
+    })
+  }, [filesToUpload, uploadedFiles])
 
   useEffect(() => {
-    if (!existingSessionId) return
-
     async function getExistingFiles() {
       const sessionRef = ref(fbStorage, `sessions/${sessionId}`)
       const { items } = await listAll(sessionRef)
-      setUploadedFiles(items.map((item) => ({ name: item.name })))
+      setUploadedFiles(
+        items
+          .map((item) => ({ name: item.name }))
+          // Remove files that need to be uploaded. This happens if a file has been
+          // uploaded but is being replaced.
+          .filter(
+            (file) => !filesToUpload.some((upload) => upload.name === file.name)
+          )
+      )
     }
     getExistingFiles().catch(console.error)
   }, [sessionId, existingSessionId, filesToUpload])
-
-  const audioFiles = allFiles.filter((file) => file.name.includes('.wav'))
-
-  const textFiles = allFiles
-    .filter((file) => file.name.includes('.txt'))
-    .sort((a, b) => {
-      // sort text files by matching name to audio file
-      const match = audioFiles.findIndex((audioFile) => {
-        const audioFileName = audioFile.name.split('.')[0]
-        const textFileName = a.name.split('.')[0]
-        return textFileName === audioFileName
-      })
-
-      return match
-    })
 
   async function handleSubmit(e: any) {
     if (filesToUpload.length === 0) {
@@ -97,6 +114,12 @@ export default function Home() {
 
         try {
           await uploadBytes(storageRef, file)
+
+          // Although we update the uploaded files state in the useEffect, updating it
+          // here quickly updates the UI immediately to show the file has been uploaded.
+          setUploadedFiles((prevState) => [...prevState, { name: file.name }])
+
+          // Remove file from files to upload.
           setFilesToUpload((prevState) => prevState.filter((f) => f !== file))
           console.log('Uploaded a blob or file!')
         } catch (error) {
@@ -112,11 +135,6 @@ export default function Home() {
     newArr.splice(idx, 1)
     setFilesToUpload([])
     setFilesToUpload(newArr)
-  }
-
-  function openFileExplorer() {
-    inputRef.current.value = ''
-    inputRef.current.click()
   }
 
   return (
@@ -146,7 +164,7 @@ export default function Home() {
           </span>
         </span>
       </div>
-      {allFiles.length !== 0 ? (
+      {matches.length !== 0 ? (
         <div className="flex flex-row w-full gap-4 flex-1">
           <div className="flex flex-1 flex-col gap-2">
             {/* <p className="text-center font-bold">Audio Files</p> */}
@@ -255,7 +273,7 @@ export default function Home() {
       ) : null}
       {
         // Update this logic to disable button if every file isn't matched.
-        filesToUpload.length !== 0 ? (
+        filesToUpload.length !== 0 && !isUploading ? (
           <button
             className="btn-primary w-full"
             disabled={isUploading}
@@ -267,7 +285,7 @@ export default function Home() {
       }
       <div
         className={`${dragActive ? 'bg-p1/10' : ''} transition flex flex-col w-full
-          ${allFiles.length === 0 ? 'flex-1' : ''} py-4 h-full border-dashed border
+          ${matches.length === 0 ? 'flex-1' : ''} py-4 h-full border-dashed border
           border-p1 rounded-xl items-center justify-center gap-4`}
         onDragEnter={(e) => {
           e.preventDefault()
@@ -285,6 +303,13 @@ export default function Home() {
                 ...prevState,
                 e.dataTransfer.files[i],
               ])
+              // Remove file from uploaded files.
+              setUploadedFiles((prevState) =>
+                prevState.filter(
+                  (uploadedFile) =>
+                    uploadedFile.name !== e.dataTransfer.files[i].name
+                )
+              )
             }
           }
         }}
@@ -314,6 +339,13 @@ export default function Home() {
                   ...prevState,
                   e.target.files[i],
                 ])
+                // Remove file from uploaded files.
+                setUploadedFiles((prevState) =>
+                  prevState.filter(
+                    (uploadedFile) =>
+                      uploadedFile.name !== e.target.files[i].name
+                  )
+                )
               }
           }}
           accept=".wav,.txt"
@@ -322,25 +354,14 @@ export default function Home() {
           Drag and drop files here or{' '}
           <span
             className="font-bold text-blue-600 cursor-pointer"
-            onClick={openFileExplorer}
+            onClick={() => {
+              inputRef.current.value = ''
+              inputRef.current.click()
+            }}
           >
             <u>browse</u>
           </span>
         </p>
-
-        {/* <div className="flex flex-col items-center p-3">
-          {files.map((file: any, idx: any) => (
-            <div key={idx} className="flex flex-row space-x-5">
-              <span>{file.name}</span>
-              <span
-                className="text-red-500 cursor-pointer"
-                onClick={() => removeFile(file.name, idx)}
-              >
-                remove
-              </span>
-            </div>
-          ))}
-        </div> */}
       </div>
     </main>
   )
