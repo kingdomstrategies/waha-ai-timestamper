@@ -25,7 +25,7 @@ export default function Home() {
   const [dragActive, setDragActive] = useState(false)
   const inputRef = useRef<any>(null)
   const [filesToUpload, setFilesToUpload] = useState<File[]>([])
-  const [uploadedFiles, setUploadedFiles] = useState<{ name: string }[]>([])
+  const [uploadedFiles, setUploadedFiles] = useState<{ name: string }[]>()
   // const [refresh, setRefresh] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
@@ -33,7 +33,7 @@ export default function Home() {
    * Match audio files with text files.
    */
   const matches = useMemo(() => {
-    const allFiles = [...uploadedFiles, ...filesToUpload].filter(
+    const allFiles = [...(uploadedFiles ?? []), ...filesToUpload].filter(
       (file, index, array) =>
         array.findIndex((f) => f.name === file.name) === index
     )
@@ -117,7 +117,10 @@ export default function Home() {
 
           // Although we update the uploaded files state in the useEffect, updating it
           // here quickly updates the UI immediately to show the file has been uploaded.
-          setUploadedFiles((prevState) => [...prevState, { name: file.name }])
+          setUploadedFiles((prevState) => [
+            ...(prevState ?? []),
+            { name: file.name },
+          ])
 
           // Remove file from files to upload.
           setFilesToUpload((prevState) => prevState.filter((f) => f !== file))
@@ -169,11 +172,11 @@ export default function Home() {
           <div className="flex flex-1 flex-col gap-2">
             {/* <p className="text-center font-bold">Audio Files</p> */}
             {matches.map(([audioFile, textFile]) => {
-              const isAudioUploaded = uploadedFiles.some(
+              const isAudioUploaded = uploadedFiles?.some(
                 (uploaded) => uploaded.name === audioFile
               )
 
-              const isTextUploaded = uploadedFiles.some(
+              const isTextUploaded = uploadedFiles?.some(
                 (uploaded) => uploaded.name === textFile
               )
 
@@ -210,8 +213,8 @@ export default function Home() {
                       <span className="group/uploaded flex relative justify-center">
                         <BiError className="text-p1" />
                         <span className="tooltip group-hover/uploaded:scale-100">
-                          Cannot find a text file with the same name as this
-                          audio file. Please upload a text file with the same
+                          Cannot find an audio file with the same name as the
+                          text file. Please upload an audio file with the same
                           name.
                         </span>
                       </span>
@@ -251,118 +254,104 @@ export default function Home() {
                       </span>
                     )}
                   </span>
-                  {/* <button
-                  className="text-sm border border-p1/10 rounded-lg text-p1"
-                  onClick={() => removeFile(file.name, 0)}
-                >
-                  Remove
-                </button> */}
                 </div>
               )
             })}
           </div>
-          {/* <div className="flex flex-1 flex-col bg-b2 rounded-xl p-4 gap-2">
-            <p className="text-center font-bold">Text Files</p>
-            {textFiles.map((file: any, idx: any) => (
-              <div key={idx} className="flex flex-row">
-                <span>{file.name}</span>
-              </div>
-            ))}
-          </div> */}
         </div>
       ) : null}
-      {
-        // Update this logic to disable button if every file isn't matched.
-        filesToUpload.length !== 0 && !isUploading ? (
-          <button
-            className="btn-primary w-full"
-            disabled={isUploading}
-            onClick={handleSubmit}
-          >
-            {isUploading ? 'Uploading...' : `Upload (${filesToUpload.length})`}
-          </button>
-        ) : null
-      }
-      <div
-        className={`${dragActive ? 'bg-p1/10' : ''} transition flex flex-col w-full
-          ${matches.length === 0 ? 'flex-1' : ''} py-4 h-full border-dashed border
-          border-p1 rounded-xl items-center justify-center gap-4`}
-        onDragEnter={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          setDragActive(true)
-        }}
-        onSubmit={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          setDragActive(false)
-          if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
-            for (let i = 0; i < e.dataTransfer.files['length']; i++) {
-              setFilesToUpload((prevState) => [
-                ...prevState,
-                e.dataTransfer.files[i],
-              ])
-              // Remove file from uploaded files.
-              setUploadedFiles((prevState) =>
-                prevState.filter(
-                  (uploadedFile) =>
-                    uploadedFile.name !== e.dataTransfer.files[i].name
-                )
-              )
-            }
-          }
-        }}
-        onDragLeave={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          setDragActive(false)
-        }}
-        onDragOver={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          setDragActive(true)
-        }}
-      >
-        <input
-          placeholder="fileInput"
-          className="hidden"
-          ref={inputRef}
-          type="file"
-          multiple={true}
-          onChange={(e) => {
+      {filesToUpload.length !== 0 && !isUploading ? (
+        <button className="btn-primary w-full" onClick={handleSubmit}>
+          {isUploading ? 'Uploading...' : `Upload (${filesToUpload.length})`}
+        </button>
+      ) : null}
+      {existingSessionId && uploadedFiles === undefined ? (
+        <div className="w-full flex-1 flex items-center justify-center flex-col gap-8">
+          <Windmill size={80} color={colors.p1} animating />
+          <p>Loading existing files...</p>
+        </div>
+      ) : (
+        <div
+          className={`${dragActive ? 'bg-p1/10' : ''} transition flex flex-col w-full
+            ${matches.length === 0 ? 'flex-1' : ''} py-4 h-full border-dashed border
+            border-p1 rounded-xl items-center justify-center gap-4`}
+          onDragEnter={(e) => {
             e.preventDefault()
-            console.log('File has been added')
-            if (e.target.files && e.target.files[0])
-              for (let i = 0; i < e.target.files['length']; i++) {
+            e.stopPropagation()
+            setDragActive(true)
+          }}
+          onSubmit={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setDragActive(false)
+            if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
+              for (let i = 0; i < e.dataTransfer.files['length']; i++) {
                 setFilesToUpload((prevState) => [
                   ...prevState,
-                  e.target.files[i],
+                  e.dataTransfer.files[i],
                 ])
                 // Remove file from uploaded files.
                 setUploadedFiles((prevState) =>
-                  prevState.filter(
+                  prevState?.filter(
                     (uploadedFile) =>
-                      uploadedFile.name !== e.target.files[i].name
+                      uploadedFile.name !== e.dataTransfer.files[i].name
                   )
                 )
               }
+            }
           }}
-          accept=".wav,.txt"
-        />
-        <p>
-          Drag and drop files here or{' '}
-          <span
-            className="font-bold text-blue-600 cursor-pointer"
-            onClick={() => {
-              inputRef.current.value = ''
-              inputRef.current.click()
+          onDragLeave={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setDragActive(false)
+          }}
+          onDragOver={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            setDragActive(true)
+          }}
+        >
+          <input
+            placeholder="fileInput"
+            className="hidden"
+            ref={inputRef}
+            type="file"
+            multiple={true}
+            onChange={(e) => {
+              e.preventDefault()
+              console.log('File has been added')
+              if (e.target.files && e.target.files[0])
+                for (let i = 0; i < e.target.files['length']; i++) {
+                  setFilesToUpload((prevState) => [
+                    ...prevState,
+                    e.target.files[i],
+                  ])
+                  // Remove file from uploaded files.
+                  setUploadedFiles((prevState) =>
+                    prevState?.filter(
+                      (uploadedFile) =>
+                        uploadedFile.name !== e.target.files[i].name
+                    )
+                  )
+                }
             }}
-          >
-            <u>browse</u>
-          </span>
-        </p>
-      </div>
+            accept=".wav,.txt"
+          />
+          <p>
+            Drag and drop files here or{' '}
+            <span
+              className="font-bold text-blue-600 cursor-pointer"
+              onClick={() => {
+                inputRef.current.value = ''
+                inputRef.current.click()
+              }}
+            >
+              <u className="text-p1">browse</u>
+            </span>
+          </p>
+        </div>
+      )}
     </main>
   )
 }
