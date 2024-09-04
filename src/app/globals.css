@@ -16,13 +16,9 @@
   font-style: normal;
 }
 
-a {
-  @apply hover:-translate-y-1 transition duration-300
-}
-
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center rounded-xl border-bd border font-medium text-center text-base leading-snug py-3.5 px-6 md:px-8 ease-in focus:ring-2 focus:ring-offset-2 cursor-pointer duration-200 hover:-translate-y-0.5 hover:bg-p1/20;
+    @apply inline-flex items-center justify-center rounded-xl border-bd border font-medium text-center text-base leading-snug py-3.5 px-6 gap-2 md:px-8 ease-in focus:ring-2 focus:ring-offset-2 cursor-pointer duration-200 hover:shadow-lg hover:bg-p1/20;
   }
 
   .btn-primary {
@@ -37,6 +33,10 @@ a {
     @apply btn border-none shadow-none hover:text-p1;
   }
 
+  .btn-disabled {
+    @apply btn cursor-not-allowed bg-f2/20 hover:shadow-none hover:bg-f2/20 hover:border-f2/20 text-f2 hover:text-f2;
+  }
+
   .card {
     @apply flex flex-col bg-b2 rounded-xl px-8 py-16 shadow-lg
   }
@@ -45,7 +45,7 @@ a {
     @apply flex flex-row justify-center items-center rounded-full text-center py-2 px-4 bg-p1/20 text-p1 font-bold text-sm;
   }
 
-  .tooltip {
-    @apply bg-b2 w-32 items-center justify-center flex absolute top-10 scale-0 transition-all rounded-lg p-2 text-xs text-f1 font-bold shadow-lg z-10
+  .page {
+    @apply px-4 flex min-h-screen flex-col items-center w-full max-w-3xl
   }
 }

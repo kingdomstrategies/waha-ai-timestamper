@@ -1,33 +1,68 @@
 'use client'
 import { listAll, ref, uploadBytes } from 'firebase/storage'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { SnackbarProvider } from 'notistack'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Windmill } from 'react-activity'
 import 'react-activity/dist/library.css'
-import { BiError, BiSolidCheckCircle, BiUpload } from 'react-icons/bi'
-import { BsArrowRight } from 'react-icons/bs'
+import { BiCheckCircle, BiError } from 'react-icons/bi'
+import { TbArrowLeft, TbRefresh } from 'react-icons/tb'
+import 'react-tooltip/dist/react-tooltip.css'
 import { v4 as uuidv4 } from 'uuid'
+import DownloadButton from '../components/DownloadButon'
+import Header from '../components/Header'
+import LanguageSelector from '../components/LanguageSelector'
+import MatchItem from '../components/MatchItem'
+import TimestampButton from '../components/TimestampButton'
+import UploadArea from '../components/UploadArea'
 import { fbStorage } from '../firebase'
+import useJob from '../hooks/useJob'
+import useLanguage from '../hooks/useLanguage'
 import { colors } from '../styles/colors'
 
-type Match = [string | undefined, string | undefined]
+const audioExtensions = ['.wav', '.mp3']
+const textExtensions = ['.txt']
 
 export default function Home() {
   const router = useRouter()
   const params = useSearchParams()
-  const [existingSessionId] = useState(params.get('sessionId'))
-  const [sessionId] = useState<string>(existingSessionId ?? uuidv4())
+  const [sessionId, setSessionId] = useState<string>('')
 
   useEffect(() => {
-    router.push(`/?sessionId=${sessionId}`)
-  }, [router, sessionId])
+    if (!params) return
+    const existingSessionId = params.get('sessionId')
+
+    if (existingSessionId && sessionId === '') {
+      router.push(`/?sessionId=${existingSessionId}`)
+      setSessionId(existingSessionId)
+    } else if (sessionId === '') {
+      const newSessionId = uuidv4()
+      router.push(`/?sessionId=${newSessionId}`)
+      setSessionId(newSessionId)
+    }
+  }, [params, router, sessionId])
 
   const [dragActive, setDragActive] = useState(false)
   const inputRef = useRef<any>(null)
   const [filesToUpload, setFilesToUpload] = useState<File[]>([])
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string }[]>()
-  // const [refresh, setRefresh] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+
+  const { languages, selectedLanguage, setQuery, query } = useLanguage()
+
+  const {
+    jobStatus,
+    downloadTimestamps,
+    resetStatus,
+    startJob,
+    downloadType,
+    setDownloadType,
+  } = useJob({
+    sessionId,
+    selectedLanguage,
+    query,
+    setQuery,
+  })
 
   /**
    * Match audio files with text files.
@@ -38,33 +73,55 @@ export default function Home() {
         array.findIndex((f) => f.name === file.name) === index
     )
 
-    const audioFiles: Set<string> = new Set()
-    const textFiles: Set<string> = new Set()
+    const audioFiles: Map<string, string> = new Map()
+    const textFiles: Map<string, string> = new Map()
 
-    // Separate audio and text files into different sets
+    // Helper function to get the file name without the extension
+    function getFileNameWithoutExtension(
+      file: string,
+      extensions: string[]
+    ): string | null {
+      for (const ext of extensions) {
+        if (file.endsWith(ext)) {
+          return file.slice(0, -ext.length)
+        }
+      }
+      return null
+    }
+
+    // Separate audio and text files into different maps
     allFiles.forEach((file) => {
-      if (file.name.endsWith('.wav')) {
-        audioFiles.add(file.name.replace('.wav', ''))
-      } else if (file.name.endsWith('.txt')) {
-        textFiles.add(file.name.replace('.txt', ''))
+      const audioFileName = getFileNameWithoutExtension(
+        file.name,
+        audioExtensions
+      )
+      const textFileName = getFileNameWithoutExtension(
+        file.name,
+        textExtensions
+      )
+
+      if (audioFileName) {
+        audioFiles.set(audioFileName, file.name)
+      } else if (textFileName) {
+        textFiles.set(textFileName, file.name)
       }
     })
 
     const matchedFiles: Array<[string | undefined, string | undefined]> = []
 
     // Match audio files with text files
-    audioFiles.forEach((audioFile) => {
-      if (textFiles.has(audioFile)) {
-        matchedFiles.push([audioFile + '.wav', audioFile + '.txt'])
-        textFiles.delete(audioFile)
+    audioFiles.forEach((audioFile, baseName) => {
+      if (textFiles.has(baseName)) {
+        matchedFiles.push([audioFile, textFiles.get(baseName)])
+        textFiles.delete(baseName)
       } else {
-        matchedFiles.push([audioFile + '.wav', undefined])
+        matchedFiles.push([audioFile, undefined])
       }
     })
 
     // Add remaining text files that have no matching audio files
-    textFiles.forEach((textFile) => {
-      matchedFiles.push([undefined, textFile + '.txt'])
+    textFiles.forEach((textFile, baseName) => {
+      matchedFiles.push([undefined, textFile])
     })
 
     // Sort matches alphabetically.
@@ -102,256 +159,166 @@ export default function Home() {
       )
     }
     getExistingFiles().catch(console.error)
-  }, [sessionId, existingSessionId, filesToUpload])
+  }, [sessionId, filesToUpload])
 
-  async function handleSubmit(e: any) {
-    if (filesToUpload.length === 0) {
-      // no file has been submitted
-    } else {
-      setIsUploading(true)
-      for (const file of filesToUpload) {
-        const storageRef = ref(fbStorage, `sessions/${sessionId}/${file.name}`)
+  async function handleUpload() {
+    setIsUploading(true)
+    for (const file of filesToUpload) {
+      const storageRef = ref(fbStorage, `sessions/${sessionId}/${file.name}`)
 
-        try {
-          await uploadBytes(storageRef, file)
+      try {
+        await uploadBytes(storageRef, file)
 
-          // Although we update the uploaded files state in the useEffect, updating it
-          // here quickly updates the UI immediately to show the file has been uploaded.
-          setUploadedFiles((prevState) => [
-            ...(prevState ?? []),
-            { name: file.name },
-          ])
+        // Although we update the uploaded files state in the useEffect, updating it
+        // here quickly updates the UI immediately to show the file has been uploaded.
+        setUploadedFiles((prevState) => [
+          ...(prevState ?? []),
+          { name: file.name },
+        ])
 
-          // Remove file from files to upload.
-          setFilesToUpload((prevState) => prevState.filter((f) => f !== file))
-          console.log('Uploaded a blob or file!')
-        } catch (error) {
-          console.error('Error uploading file: ', error)
-        }
+        // Remove file from files to upload.
+        setFilesToUpload((prevState) => prevState.filter((f) => f !== file))
+        console.log('Uploaded a blob or file!')
+      } catch (error) {
+        console.error('Error uploading file: ', error)
       }
-      setIsUploading(false)
     }
+    setIsUploading(false)
   }
 
-  function removeFile(fileName: any, idx: any) {
-    const newArr = [...filesToUpload]
-    newArr.splice(idx, 1)
-    setFilesToUpload([])
-    setFilesToUpload(newArr)
-  }
+  useEffect(() => {
+    if (filesToUpload.length > 0) handleUpload()
+  }, [filesToUpload])
 
-  return (
-    <main
-      className="px-4 flex min-h-screen flex-col items-center justify-between py-12 w-full
-        max-w-2xl gap-4"
-    >
-      <div className="w-full">
-        {/* <h1 className="font-bold text-xl mb-1">Forced Alignment</h1>
-        <p className="text-f2 text-sm mb-1">
-          This app will take your audio files and your text files and output
-          data mapping each piece of a text to a specific time in the audio.
-          This process is called &quot;forced alignment&quot;.
-        </p> */}
-        <span
-          className="text-xs text-f2 font-bold cursor-pointer group/copy flex relative justify-center"
-          onClick={() => {
-            // Copy to clipboard
-            navigator.clipboard.writeText(
-              `http://localhost:3000/?sessionId=${sessionId}`
-            )
-          }}
-        >
-          http://localhost:3000/?sessionId={sessionId}
-          <span className="tooltip group-hover/copy:scale-100">
-            Click to copy
-          </span>
-        </span>
-      </div>
-      {matches.length !== 0 ? (
-        <div className="flex flex-row w-full gap-4 flex-1">
-          <div className="flex flex-1 flex-col gap-2">
-            {/* <p className="text-center font-bold">Audio Files</p> */}
-            {matches.map(([audioFile, textFile]) => {
-              const isAudioUploaded = uploadedFiles?.some(
-                (uploaded) => uploaded.name === audioFile
-              )
+  const icon = useMemo(() => {
+    switch (jobStatus) {
+      case 'in_progress':
+      case 'starting':
+      case undefined:
+        return <Windmill color={colors.p1} size={48} animating />
+      case 'done':
+        return <BiCheckCircle className="size-12 text-p1" />
+      case 'failed':
+        return <BiError className="size-12 text-p1" />
+      default:
+        return null
+    }
+  }, [jobStatus])
 
-              const isTextUploaded = uploadedFiles?.some(
-                (uploaded) => uploaded.name === textFile
-              )
+  const statusText = useMemo(() => {
+    switch (jobStatus) {
+      case undefined:
+        return 'Loading...'
+      case 'starting':
+        return 'Starting timestamping...'
+      case 'in_progress':
+        return 'Timestamping in progress...'
+      case 'done':
+        return 'Timestamping finished!'
+      case 'failed':
+        return 'Timestamping failed.'
+      default:
+        return null
+    }
+  }, [jobStatus])
 
-              return (
-                <div
-                  key={audioFile}
-                  className="flex flex-row py-1 gap-4 items-center"
-                >
-                  <span
-                    className={`flex-1 flex flex-row items-center card px-4 py-4 ${!audioFile ? 'bg-p1/10' : ''}`}
-                  >
-                    <p className="flex-1">
-                      {audioFile ?? 'No audio file found'}
-                    </p>
-                    {audioFile ? (
-                      isAudioUploaded ? (
-                        <span className="group/uploaded flex relative justify-center">
-                          <BiSolidCheckCircle className="text-p1/40" />
-                          <span className="tooltip group-hover/uploaded:scale-100">
-                            Uploaded
-                          </span>
-                        </span>
-                      ) : isUploading ? (
-                        <Windmill size={16} color={colors.p1} animating />
-                      ) : (
-                        <span className="group/uploaded flex relative justify-center">
-                          <BiUpload className="text-p1" />
-                          <span className="tooltip group-hover/uploaded:scale-100">
-                            This file needs to be uploaded
-                          </span>
-                        </span>
-                      )
-                    ) : (
-                      <span className="group/uploaded flex relative justify-center">
-                        <BiError className="text-p1" />
-                        <span className="tooltip group-hover/uploaded:scale-100">
-                          Cannot find an audio file with the same name as the
-                          text file. Please upload an audio file with the same
-                          name.
-                        </span>
-                      </span>
-                    )}
-                  </span>
-                  <BsArrowRight className="text-f1" />
-                  <span
-                    className={` flex-1 flex flex-row items-center card px-4 py-4 ${!textFile ? 'bg-p1/10' : ''}`}
-                  >
-                    <p className="flex-1">{textFile ?? 'No text found'}</p>
-                    {textFile ? (
-                      isTextUploaded ? (
-                        <span className="group/uploaded flex relative justify-center">
-                          <BiSolidCheckCircle className="text-p1/40" />
-                          <span className="tooltip group-hover/uploaded:scale-100">
-                            Uploaded
-                          </span>
-                        </span>
-                      ) : isUploading ? (
-                        <Windmill size={16} color={colors.p1} animating />
-                      ) : (
-                        <span className="group/uploaded flex relative justify-center">
-                          <BiUpload className="text-p1" />
-                          <span className="tooltip group-hover/uploaded:scale-100">
-                            This file needs to be uploaded
-                          </span>
-                        </span>
-                      )
-                    ) : (
-                      <span className="group/uploaded flex relative justify-center">
-                        <BiError className="text-p1" />
-                        <span className="tooltip group-hover/uploaded:scale-100">
-                          Cannot find a text file with the same name as this
-                          audio file. Please upload a text file with the same
-                          name.
-                        </span>
-                      </span>
-                    )}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+  console.log(uploadedFiles)
+
+  return jobStatus !== 'not_started' ? (
+    <div className="flex flex-col w-full flex-1 items-center justify-center py-4">
+      <Header
+        jobStatus={jobStatus}
+        resetStatus={resetStatus}
+        sessionId={sessionId}
+      />
+      <div
+        className="w-full flex flex-col items-center justify-center border rounded-lg border-f1/10
+          p-4 flex-1"
+      >
+        <div className="flex flex-col items-center justify-center gap-4 mb-12">
+          {icon}
+          <p className="text-f1 font-bold text-xl">{statusText}</p>
         </div>
-      ) : null}
-      {filesToUpload.length !== 0 && !isUploading ? (
-        <button className="btn-primary w-full" onClick={handleSubmit}>
-          {isUploading ? 'Uploading...' : `Upload (${filesToUpload.length})`}
-        </button>
-      ) : null}
-      {existingSessionId && uploadedFiles === undefined ? (
-        <div className="w-full flex-1 flex items-center justify-center flex-col gap-8">
-          <Windmill size={80} color={colors.p1} animating />
-          <p>Loading existing files...</p>
-        </div>
-      ) : (
-        <div
-          className={`${dragActive ? 'bg-p1/10' : ''} transition flex flex-col w-full
-            ${matches.length === 0 ? 'flex-1' : ''} py-4 h-full border-dashed border
-            border-p1 rounded-xl items-center justify-center gap-4`}
-          onDragEnter={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setDragActive(true)
-          }}
-          onSubmit={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setDragActive(false)
-            if (e.dataTransfer?.files && e.dataTransfer.files[0]) {
-              for (let i = 0; i < e.dataTransfer.files['length']; i++) {
-                setFilesToUpload((prevState) => [
-                  ...prevState,
-                  e.dataTransfer.files[i],
-                ])
-                // Remove file from uploaded files.
-                setUploadedFiles((prevState) =>
-                  prevState?.filter(
-                    (uploadedFile) =>
-                      uploadedFile.name !== e.dataTransfer.files[i].name
-                  )
-                )
-              }
-            }
-          }}
-          onDragLeave={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setDragActive(false)
-          }}
-          onDragOver={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setDragActive(true)
-          }}
-        >
-          <input
-            placeholder="fileInput"
-            className="hidden"
-            ref={inputRef}
-            type="file"
-            multiple={true}
-            onChange={(e) => {
-              e.preventDefault()
-              console.log('File has been added')
-              if (e.target.files && e.target.files[0])
-                for (let i = 0; i < e.target.files['length']; i++) {
-                  setFilesToUpload((prevState) => [
-                    ...prevState,
-                    e.target.files[i],
-                  ])
-                  // Remove file from uploaded files.
-                  setUploadedFiles((prevState) =>
-                    prevState?.filter(
-                      (uploadedFile) =>
-                        uploadedFile.name !== e.target.files[i].name
-                    )
-                  )
-                }
-            }}
-            accept=".wav,.txt"
+        {jobStatus === 'done' ? (
+          <DownloadButton
+            download={downloadTimestamps}
+            downloadType={downloadType}
+            setDownloadType={setDownloadType}
           />
-          <p>
-            Drag and drop files here or{' '}
-            <span
-              className="font-bold text-blue-600 cursor-pointer"
-              onClick={() => {
-                inputRef.current.value = ''
-                inputRef.current.click()
-              }}
-            >
-              <u className="text-p1">browse</u>
-            </span>
-          </p>
-        </div>
-      )}
-    </main>
+        ) : null}
+      </div>
+      {jobStatus === 'done' || jobStatus === 'failed' ? (
+        <>
+          <button className="btn w-full" onClick={resetStatus}>
+            <TbArrowLeft className="size-4" />
+            Back to session
+          </button>
+          <button
+            className="btn w-full"
+            onClick={() => {
+              router.push('/')
+            }}
+          >
+            <TbRefresh className="size-4" />
+            Start over
+          </button>
+        </>
+      ) : null}
+      <SnackbarProvider autoHideDuration={3000} />
+    </div>
+  ) : (
+    <div className="flex flex-col w-full flex-1 pt-4 h-dvh">
+      <Header
+        jobStatus={jobStatus}
+        resetStatus={resetStatus}
+        sessionId={sessionId}
+      />
+      <LanguageSelector
+        languages={languages}
+        selectedLanguage={selectedLanguage}
+        setQuery={setQuery}
+        query={query}
+      />
+      <div className="flex flex-col gap-1 w-full">
+        <h2 className="text-f1 text-lg font-bold">Files</h2>
+        <p className="text-xs text-f2 mb-4">
+          Text files that will be matched against their audio counterparts must
+          have the same file name, except the extension.
+        </p>
+      </div>
+      <div className="flex flex-col w-full gap-4 flex-1 flex-grow overflow-y-scroll overflow-x-auto">
+        {matches.length !== 0 ? (
+          <div className="flex flex-1 flex-col gap-2">
+            {matches.map((match) => (
+              <MatchItem
+                key={match[0]}
+                isUploading={isUploading}
+                match={match}
+                uploadedFiles={uploadedFiles}
+                sessionId={sessionId}
+                setUploadedFiles={setUploadedFiles}
+              />
+            ))}
+          </div>
+        ) : null}
+        <UploadArea
+          dragActive={dragActive}
+          inputRef={inputRef}
+          matches={matches}
+          setDragActive={setDragActive}
+          setFilesToUpload={setFilesToUpload}
+          setUploadedFiles={setUploadedFiles}
+        />
+      </div>
+      <TimestampButton
+        filesToUpload={filesToUpload}
+        isUploading={isUploading}
+        matches={matches}
+        selectedLanguage={selectedLanguage}
+        sessionId={sessionId}
+        startJob={startJob}
+      />
+      <SnackbarProvider autoHideDuration={3000} />
+    </div>
   )
 }
