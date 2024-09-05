@@ -51,6 +51,12 @@ export default function FilesArea({
     } else if (isUploading) {
       enqueueSnackbar('Please wait for the current uploads to finish.')
       return
+    } else if (uploadedFiles && uploadedFiles.length + files['length'] > 2000) {
+      enqueueSnackbar('You can only upload up to 2000 files at a time.')
+      return
+    } else if (files['length'] > 2000) {
+      enqueueSnackbar('You can only upload up to 2000 files at a time.')
+      return
     }
 
     setIsUploading(true)
@@ -71,13 +77,21 @@ export default function FilesArea({
           `Ignoring file "${file.name}" due to invalid file type.`
         )
         continue
-      } else {
-        // Remove file from uploaded files in case we are replacing a file.
-        setUploadedFiles((prevState) =>
-          prevState?.filter((uploadedFile) => uploadedFile.name !== file.name)
-        )
-        filesToUpload.push(file)
       }
+
+      const size = file.size / 1024 / 1024
+      if (size > 1000) {
+        enqueueSnackbar(
+          `Ignoring file "${file.name}" due to file size exceeding 1GB.`
+        )
+        continue
+      }
+
+      // Remove file from uploaded files in case we are replacing a file.
+      setUploadedFiles((prevState) =>
+        prevState?.filter((uploadedFile) => uploadedFile.name !== file.name)
+      )
+      filesToUpload.push(file)
     }
 
     setFilesToUpload(filesToUpload)
