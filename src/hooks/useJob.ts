@@ -31,6 +31,10 @@ interface FileTimestamps {
 
 interface SessionDoc {
   status: JobStatus
+  error?: string
+  total?: number
+  progress?: number
+  current?: string
   language?: string
   timestamps?: FileTimestamps[]
 }
@@ -71,6 +75,10 @@ export default function useJob({
   const [existingLanguage, setExistingLanguage] = useState<string>()
   const [hasSetExistingLanguage, setHasSetExistingLanguage] = useState(false)
   const [downloadType, setDownloadType] = useState<DownloadType>('json')
+  const [total, setTotal] = useState<number | undefined>()
+  const [progress, setProgress] = useState<number | undefined>()
+  const [current, setCurrent] = useState<string | undefined>()
+  const [error, setError] = useState<string | undefined>()
 
   useEffect(() => {
     signInAnonymously(fbAuth).then(() => setIsSignedIn(true))
@@ -83,8 +91,12 @@ export default function useJob({
       if (doc.exists()) {
         const data = doc.data() as SessionDoc
         setJobStatus(data.status)
-        if (data.status === 'done') setTimestampData(data.timestamps)
-        if (data.language) setExistingLanguage(data.language)
+        if (data.timestamps !== undefined) setTimestampData(data.timestamps)
+        if (data.language !== undefined) setExistingLanguage(data.language)
+        if (data.total !== undefined) setTotal(data.total)
+        if (data.progress !== undefined) setProgress(data.progress)
+        if (data.current !== undefined) setCurrent(data.current)
+        if (data.error !== undefined) setError(data.error)
       } else resetStatus()
     })
 
@@ -181,5 +193,9 @@ export default function useJob({
     startJob,
     downloadType,
     setDownloadType,
+    total,
+    progress,
+    current,
+    error,
   }
 }

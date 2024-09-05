@@ -16,9 +16,10 @@
   font-style: normal;
 }
 
+
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center rounded-xl border-bd border font-medium text-center text-base leading-snug py-3.5 px-6 gap-2 md:px-8 ease-in focus:ring-2 focus:ring-offset-2 cursor-pointer duration-200 hover:shadow-lg hover:bg-p1/20;
+    @apply inline-flex items-center justify-center rounded-xl border-p1/10 border font-medium text-center text-base leading-snug py-3.5 px-6 gap-2 md:px-8 ease-in focus:ring-2 focus:ring-offset-2 cursor-pointer duration-200 hover:shadow-lg hover:bg-p1/20;
   }
 
   .btn-primary {
@@ -34,7 +35,7 @@
   }
 
   .btn-disabled {
-    @apply btn cursor-not-allowed bg-f2/20 hover:shadow-none hover:bg-f2/20 hover:border-f2/20 text-f2 hover:text-f2;
+    @apply btn cursor-not-allowed bg-f2/0 hover:shadow-none hover:bg-f2/0 hover:border-f2/20 text-f2 hover:text-f2;
   }
 
   .card {
@@ -42,7 +43,7 @@
   }
 
   .pill {
-    @apply flex flex-row justify-center items-center rounded-full text-center py-2 px-4 bg-p1/20 text-p1 font-bold text-sm;
+    @apply font-mono flex flex-row justify-center items-center rounded-full text-center py-2 px-3 bg-p1/20 text-p1 font-bold text-xs;
   }
 
   .page {

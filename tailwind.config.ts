@@ -10,6 +10,16 @@ const config: Config = {
   theme: {
     fontFamily: {
       sans: ['EudoxusSans', 'sans-serif'],
+      mono: [
+        'ui-monospace',
+        'SFMono-Regular',
+        'Menlo',
+        'Monaco',
+        'Consolas',
+        'Liberation Mono',
+        'Courier New',
+        'monospace',
+      ],
     },
     colors,
   },

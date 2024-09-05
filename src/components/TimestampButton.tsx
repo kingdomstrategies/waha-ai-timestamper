@@ -8,6 +8,7 @@ interface Props {
   matches: [string | undefined, string | undefined][]
   selectedLanguage: MmsLanguage | null | undefined
   startJob: () => void
+  resetStatus: () => void
   sessionId: string
 }
 
@@ -18,16 +19,17 @@ export default function TimestampButton({
   selectedLanguage,
   sessionId,
   startJob,
+  resetStatus,
 }: Props) {
   const errorMessage = useMemo(() => {
     if (filesToUpload.length !== 0 || isUploading) {
-      return 'Please wait for uploads to finish.'
+      return 'Please wait for uploads to finish'
     } else if (matches.length === 0) {
-      return 'Please upload files to timestamp.'
+      return 'Please upload files to timestamp'
     } else if (
       !matches.every(([audioFile, textFile]) => audioFile && textFile)
     ) {
-      return 'Please upload both an audio and text file for each match.'
+      return 'Every audio file must have a matching text file (and vice versa)'
     } else if (!selectedLanguage) {
       return 'Please select a language.'
     } else return
@@ -36,6 +38,8 @@ export default function TimestampButton({
   async function handleSubmit() {
     startJob()
     const baseUrl = 'http://34.81.60.7:8000'
+    // const baseUrl = 'http://localhost:8000'
+
     const url = `${baseUrl}/?lang=${selectedLanguage?.iso}&session-id=${sessionId}`
     console.log('Fetching from', url)
     fetch(url)

@@ -1,9 +1,12 @@
 import { deleteObject, ref } from 'firebase/storage'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { Windmill } from 'react-activity'
-import { BiSolidCheckCircle, BiTrash } from 'react-icons/bi'
-import { BsArrowRight } from 'react-icons/bs'
-import { TbCheck, TbExclamationCircle, TbTrash } from 'react-icons/tb'
+import {
+  TbArrowsLeftRight,
+  TbCheck,
+  TbExclamationCircle,
+  TbTrash,
+} from 'react-icons/tb'
 import { Tooltip } from 'react-tooltip'
 import { fbStorage } from '../firebase'
 import { colors } from '../styles/colors'
@@ -44,26 +47,37 @@ export default function MatchItem({
     setDeleting(undefined)
   }
 
+  const audioExt = audioFile?.split('.').pop()
+  const textExt = textFile?.split('.').pop()
+  const audioName = audioFile?.split('.').slice(0, -1).join('.')
+  const textName = textFile?.split('.').slice(0, -1).join('.')
+
   return (
     <div
       key={audioFile}
-      className="w-full flex flex-col sm:flex-row sm:gap-4 items-center border border-p1/10 p-4
-        sm:pd-0 rounded-xl sm:border-0 sm:p-0"
+      className="w-full flex flex-col sm:flex-row gap-1 sm:gap-4 items-center border border-p1/10
+        p-2 rounded-xl sm:border-0 sm:p-0"
     >
       <div
         className={`w-full flex-1 flex flex-row items-center card px-4 py-4
           ${!audioFile ? 'bg-p1/10' : ''}`}
       >
-        <p className="flex-1">{audioFile ?? 'No audio file found'}</p>
+        {audioFile ? (
+          <p className="flex-1 font-mono text-sm">
+            {audioName}
+            <span className="text-f2">.{audioExt}</span>
+          </p>
+        ) : (
+          <p className="flex-1 text-sm">No audio file found</p>
+        )}
         {audioFile ? (
           deleting === audioFile ? (
-            <Windmill
+            <span
               data-tooltip-id="audio-deleting"
               data-tooltip-content="Deleting..."
-              size={16}
-              color={colors.p1}
-              animating
-            />
+            >
+              <Windmill size={16} color={colors.p1} />
+            </span>
           ) : isAudioUploaded ? (
             <div className="flex flex-row gap-2">
               <button
@@ -80,13 +94,12 @@ export default function MatchItem({
               />
             </div>
           ) : isUploading ? (
-            <Windmill
+            <span
               data-tooltip-id="audio-uploading"
               data-tooltip-content="Uploading..."
-              size={16}
-              color={colors.p1}
-              animating
-            />
+            >
+              <Windmill size={16} color={colors.p1} />
+            </span>
           ) : null
         ) : (
           <TbExclamationCircle
@@ -96,21 +109,27 @@ export default function MatchItem({
           />
         )}
       </div>
-      <BsArrowRight className="text-f1 invisible sm:visible" />
+      <TbArrowsLeftRight className="text-f1 h-0 invisible sm:visible sm:h-auto" />
       <div
         className={`w-full flex-1 flex flex-row items-center card px-4 py-4
           ${!textFile ? 'bg-p1/10' : ''}`}
       >
-        <p className="flex-1">{textFile ?? 'No text file found'}</p>
+        {textFile ? (
+          <p className="flex-1 font-mono text-sm">
+            {textName}
+            <span className="text-f2">.{textExt}</span>
+          </p>
+        ) : (
+          <p className="flex-1 text-sm">No text file found</p>
+        )}
         {textFile ? (
           deleting === textFile ? (
-            <Windmill
+            <span
               data-tooltip-id="text-deleting"
               data-tooltip-content="Deleting..."
-              size={16}
-              color={colors.p1}
-              animating
-            />
+            >
+              <Windmill size={16} color={colors.p1} animating />
+            </span>
           ) : isTextUploaded ? (
             <div className="flex flex-row gap-2">
               <button
@@ -119,22 +138,21 @@ export default function MatchItem({
                 onClick={() => deleteFile(textFile)}
                 className="tooltip-parent group/uploaded"
               >
-                <BiTrash className="text-p1/40" />
+                <TbTrash className="text-p1/40" />
               </button>
-              <BiSolidCheckCircle
+              <TbCheck
                 data-tooltip-id="text-uploaded"
                 data-tooltip-content="Uploaded"
                 className="text-p1/40"
               />
             </div>
           ) : isUploading ? (
-            <Windmill
+            <span
               data-tooltip-id="text-uploading"
-              data-tooltip-content="Upload..."
-              size={16}
-              color={colors.p1}
-              animating
-            />
+              data-tooltip-content="Uploading..."
+            >
+              <Windmill size={16} color={colors.p1} />
+            </span>
           ) : null
         ) : (
           <TbExclamationCircle

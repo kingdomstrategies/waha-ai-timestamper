@@ -24,7 +24,7 @@ export default function useLanguage() {
           (language) => language.iso === query || language.name === query
         ) ?? null
       )
-    } else {
+    } else if (selectedLanguage !== undefined) {
       setSelectedLanguage(null)
     }
   }, [query])

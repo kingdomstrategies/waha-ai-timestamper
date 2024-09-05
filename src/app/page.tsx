@@ -1,20 +1,23 @@
 'use client'
-import { listAll, ref, uploadBytes } from 'firebase/storage'
+import { listAll, ref } from 'firebase/storage'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { SnackbarProvider } from 'notistack'
+import { enqueueSnackbar, SnackbarProvider } from 'notistack'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Windmill } from 'react-activity'
 import 'react-activity/dist/library.css'
-import { BiCheckCircle, BiError } from 'react-icons/bi'
-import { TbArrowLeft, TbRefresh } from 'react-icons/tb'
+import {
+  TbArrowLeft,
+  TbCheck,
+  TbExclamationCircle,
+  TbRefresh,
+} from 'react-icons/tb'
 import 'react-tooltip/dist/react-tooltip.css'
 import { v4 as uuidv4 } from 'uuid'
 import DownloadButton from '../components/DownloadButon'
+import FilesArea from '../components/FilesArea'
 import Header from '../components/Header'
 import LanguageSelector from '../components/LanguageSelector'
-import MatchItem from '../components/MatchItem'
 import TimestampButton from '../components/TimestampButton'
-import UploadArea from '../components/UploadArea'
 import { fbStorage } from '../firebase'
 import useJob from '../hooks/useJob'
 import useLanguage from '../hooks/useLanguage'
@@ -47,6 +50,7 @@ export default function Home() {
   const [filesToUpload, setFilesToUpload] = useState<File[]>([])
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string }[]>()
   const [isUploading, setIsUploading] = useState(false)
+  const [isFetchingExistingFiles, setIsFetchingExistingFiles] = useState(false)
 
   const { languages, selectedLanguage, setQuery, query } = useLanguage()
 
@@ -57,6 +61,10 @@ export default function Home() {
     startJob,
     downloadType,
     setDownloadType,
+    current,
+    error,
+    progress,
+    total,
   } = useJob({
     sessionId,
     selectedLanguage,
@@ -146,8 +154,14 @@ export default function Home() {
 
   useEffect(() => {
     async function getExistingFiles() {
+      if (matches.length === 0) {
+        console.log('1')
+        setIsFetchingExistingFiles(true)
+      }
+      console.log('2')
       const sessionRef = ref(fbStorage, `sessions/${sessionId}`)
       const { items } = await listAll(sessionRef)
+      console.log('3', items.length)
       setUploadedFiles(
         items
           .map((item) => ({ name: item.name }))
@@ -157,38 +171,15 @@ export default function Home() {
             (file) => !filesToUpload.some((upload) => upload.name === file.name)
           )
       )
+      console.log('4')
+      setIsFetchingExistingFiles(false)
     }
     getExistingFiles().catch(console.error)
-  }, [sessionId, filesToUpload])
+  }, [sessionId, filesToUpload, setIsFetchingExistingFiles, jobStatus])
 
-  async function handleUpload() {
-    setIsUploading(true)
-    for (const file of filesToUpload) {
-      const storageRef = ref(fbStorage, `sessions/${sessionId}/${file.name}`)
-
-      try {
-        await uploadBytes(storageRef, file)
-
-        // Although we update the uploaded files state in the useEffect, updating it
-        // here quickly updates the UI immediately to show the file has been uploaded.
-        setUploadedFiles((prevState) => [
-          ...(prevState ?? []),
-          { name: file.name },
-        ])
-
-        // Remove file from files to upload.
-        setFilesToUpload((prevState) => prevState.filter((f) => f !== file))
-        console.log('Uploaded a blob or file!')
-      } catch (error) {
-        console.error('Error uploading file: ', error)
-      }
-    }
-    setIsUploading(false)
-  }
-
-  useEffect(() => {
-    if (filesToUpload.length > 0) handleUpload()
-  }, [filesToUpload])
+  // useEffect(() => {
+  //   if (filesToUpload.length > 0 && !isUploading) handleUpload()
+  // }, [filesToUpload, isUploading])
 
   const icon = useMemo(() => {
     switch (jobStatus) {
@@ -197,9 +188,9 @@ export default function Home() {
       case undefined:
         return <Windmill color={colors.p1} size={48} animating />
       case 'done':
-        return <BiCheckCircle className="size-12 text-p1" />
+        return <TbCheck className="size-12 text-p1" />
       case 'failed':
-        return <BiError className="size-12 text-p1" />
+        return <TbExclamationCircle className="size-12 text-p1" />
       default:
         return null
     }
@@ -222,8 +213,6 @@ export default function Home() {
     }
   }, [jobStatus])
 
-  console.log(uploadedFiles)
-
   return jobStatus !== 'not_started' ? (
     <div className="flex flex-col w-full flex-1 items-center justify-center py-4">
       <Header
@@ -232,13 +221,44 @@ export default function Home() {
         sessionId={sessionId}
       />
       <div
-        className="w-full flex flex-col items-center justify-center border rounded-lg border-f1/10
+        className="w-full flex flex-col items-center justify-center border rounded-xl border-p1/10
           p-4 flex-1"
       >
         <div className="flex flex-col items-center justify-center gap-4 mb-12">
           {icon}
           <p className="text-f1 font-bold text-xl">{statusText}</p>
         </div>
+        {jobStatus === 'in_progress' ? (
+          <div className="flex flex-col w-full items-center gap-2 text-center">
+            {current ? (
+              <div className="flex flex-row items-center gap-2 mb-2">
+                <p>Currently processing:</p>
+                <div className="pill font-mono">{current}</div>
+              </div>
+            ) : null}
+            {progress !== undefined && total !== undefined ? (
+              <p className="text-xs mb-2">
+                {progress} of {total} files processed
+              </p>
+            ) : null}
+            <p>
+              You can safely close this page. Return to this url to download the
+              results when they are finished.
+            </p>
+            <button
+              onClick={() => {
+                // Copy to clipboard
+                navigator.clipboard.writeText(
+                  `http://localhost:3000/?sessionId=${sessionId}`
+                )
+                enqueueSnackbar('Copied!')
+              }}
+              className="btn text-xs font-bold text-p1 px-2 py-1 border border-p1/10 rounded-lg"
+            >
+              Copy url to clipboard
+            </button>
+          </div>
+        ) : null}
         {jobStatus === 'done' ? (
           <DownloadButton
             download={downloadTimestamps}
@@ -246,10 +266,16 @@ export default function Home() {
             setDownloadType={setDownloadType}
           />
         ) : null}
+        {jobStatus === 'failed' && error ? (
+          <div className="rounded-lg p-4 bg-p1/10 gap-2 flex flex-col w-full">
+            <h3 className="text-f1 font-bold text-lg">Error</h3>
+            <p className="font- text-xs">{error}</p>
+          </div>
+        ) : null}
       </div>
       {jobStatus === 'done' || jobStatus === 'failed' ? (
         <>
-          <button className="btn w-full" onClick={resetStatus}>
+          <button className="btn w-full my-4" onClick={resetStatus}>
             <TbArrowLeft className="size-4" />
             Back to session
           </button>
@@ -279,37 +305,26 @@ export default function Home() {
         setQuery={setQuery}
         query={query}
       />
-      <div className="flex flex-col gap-1 w-full">
+      {/* <div className="flex flex-col gap-1 w-full">
         <h2 className="text-f1 text-lg font-bold">Files</h2>
         <p className="text-xs text-f2 mb-4">
-          Text files that will be matched against their audio counterparts must
-          have the same file name, except the extension.
+          Upload audio files and their text transcript files. Matches should
+          have the same name.
         </p>
-      </div>
-      <div className="flex flex-col w-full gap-4 flex-1 flex-grow overflow-y-scroll overflow-x-auto">
-        {matches.length !== 0 ? (
-          <div className="flex flex-1 flex-col gap-2">
-            {matches.map((match) => (
-              <MatchItem
-                key={match[0]}
-                isUploading={isUploading}
-                match={match}
-                uploadedFiles={uploadedFiles}
-                sessionId={sessionId}
-                setUploadedFiles={setUploadedFiles}
-              />
-            ))}
-          </div>
-        ) : null}
-        <UploadArea
-          dragActive={dragActive}
-          inputRef={inputRef}
-          matches={matches}
-          setDragActive={setDragActive}
-          setFilesToUpload={setFilesToUpload}
-          setUploadedFiles={setUploadedFiles}
-        />
-      </div>
+      </div> */}
+      <FilesArea
+        isUploading={isUploading}
+        uploadedFiles={uploadedFiles}
+        dragActive={dragActive}
+        inputRef={inputRef}
+        matches={matches}
+        setDragActive={setDragActive}
+        setFilesToUpload={setFilesToUpload}
+        setUploadedFiles={setUploadedFiles}
+        sessionId={sessionId}
+        setIsUploading={setIsUploading}
+        isFetchingExistingFiles={isFetchingExistingFiles}
+      />
       <TimestampButton
         filesToUpload={filesToUpload}
         isUploading={isUploading}
@@ -317,6 +332,7 @@ export default function Home() {
         selectedLanguage={selectedLanguage}
         sessionId={sessionId}
         startJob={startJob}
+        resetStatus={resetStatus}
       />
       <SnackbarProvider autoHideDuration={3000} />
     </div>
