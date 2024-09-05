@@ -65,7 +65,7 @@ export default function HelpModal({ open, setOpen }: Props) {
                     </h2>
                     <p className="text-sm">
                       With timestamped text, you can create subtitles, add
-                      read-along modes where text highlights as it's spoken, or
+                      read-along modes where text highlights as it’s spoken, or
                       even programmatically edit audio files. This data is
                       valuable for video production, digital bibles, podcasting,
                       language learning, and more.
