@@ -1,5 +1,8 @@
+import { useState } from 'react'
+import { TbHelp } from 'react-icons/tb'
 import { JobStatus } from '../hooks/useJob'
 import { colors } from '../styles/colors'
+import HelpModal from './HelpModal'
 
 interface Props {
   sessionId: string
@@ -8,6 +11,8 @@ interface Props {
 }
 
 export default function Header({ jobStatus, resetStatus, sessionId }: Props) {
+  const [showModal, setShowModal] = useState(false)
+
   return (
     <div className="flex flex-row w-full gap-4 mb-4 justify-center items-center">
       <svg
@@ -29,7 +34,14 @@ export default function Header({ jobStatus, resetStatus, sessionId }: Props) {
           fill={colors.p1}
         />
       </svg>
-      <h1 className="font-mono text-p1 text-2xl font-bold">timestamp.audio</h1>
+      <h1 className="font-mono text-p1 text-2xl font-bold flex-1">
+        timestamp.audio
+      </h1>
+      <button className="btn px-4 py-2" onClick={() => setShowModal(true)}>
+        <TbHelp className="size-4 text-p1" />
+        Help
+      </button>
+      <HelpModal open={showModal} setOpen={setShowModal} />
     </div>
   )
 }
