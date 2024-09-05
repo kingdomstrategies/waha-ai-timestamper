@@ -110,7 +110,10 @@ export default function FilesArea({
   }
 
   return isFetchingExistingFiles ? (
-    <div>
+    <div
+      className="w-full flex flex-col flex-1 items-center justify-center border-dashed border
+        border-p1/40 rounded-xl overflow-y-auto gap-8"
+    >
       <Windmill color={colors.p1} size={32} />
       Loading files...
     </div>
