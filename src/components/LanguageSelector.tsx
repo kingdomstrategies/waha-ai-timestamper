@@ -33,7 +33,7 @@ export default function LanguageSelector({
           list="languages"
           className={`w-full p-4 rounded-lg shadow-md border
             ${selectedLanguage === null ? 'border-p1' : 'border-b2'}`}
-          placeholder="Select the language of your files"
+          placeholder="Select from 1000+ languages"
           spellCheck="false"
           autoCapitalize="off"
           autoComplete="off"
