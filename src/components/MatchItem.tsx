@@ -55,8 +55,8 @@ export default function MatchItem({
   return (
     <div
       key={audioFile}
-      className="w-full flex flex-col sm:flex-row gap-1 sm:gap-4 items-center border border-p1/10
-        p-2 rounded-xl sm:border-0 sm:p-0"
+      className="w-full flex flex-col sm:flex-row gap-1 sm:gap-4 items-center p-2 rounded-xl
+        sm:p-0 bg-p1/10 sm:bg-p1/0"
     >
       <div
         className={`w-full flex-1 flex flex-row items-center card px-4 py-4
