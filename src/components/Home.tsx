@@ -282,7 +282,8 @@ export default function Home() {
           <button
             className="btn w-full"
             onClick={() => {
-              router.push('/')
+              router.replace('/')
+              location.reload()
             }}
           >
             <TbRefresh className="size-4" />
