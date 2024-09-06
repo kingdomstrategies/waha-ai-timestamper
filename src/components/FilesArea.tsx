@@ -7,9 +7,8 @@ import 'react-activity/dist/library.css'
 import { TbUpload } from 'react-icons/tb'
 import { fbStorage } from '../firebase'
 import { colors } from '../styles/colors'
+import { audioExtensions, textExtensions } from './Home'
 import MatchItem, { Match } from './MatchItem'
-const audioExtensions = ['.wav', '.mp3']
-const textExtensions = ['.txt']
 
 interface Props {
   isUploading: boolean
@@ -30,6 +29,8 @@ interface Props {
   >
   matches: Match[]
   isFetchingExistingFiles: boolean
+  setUploadStartTime: Dispatch<SetStateAction<number | undefined>>
+  setUploadSize: Dispatch<SetStateAction<number | undefined>>
 }
 export default function FilesArea({
   isUploading,
@@ -43,6 +44,8 @@ export default function FilesArea({
   setUploadedFiles,
   matches,
   isFetchingExistingFiles,
+  setUploadStartTime,
+  setUploadSize,
 }: Props) {
   async function onDragOrSelect(files: FileList | null) {
     if (!files) {
@@ -51,7 +54,7 @@ export default function FilesArea({
     } else if (isUploading) {
       enqueueSnackbar('Please wait for the current uploads to finish.')
       return
-    } else if (uploadedFiles && uploadedFiles.length + files['length'] > 2000) {
+    } else if (uploadedFiles && uploadedFiles.length + files.length > 2000) {
       enqueueSnackbar('You can only upload up to 2000 files at a time.')
       return
     } else if (files['length'] > 2000) {
@@ -61,9 +64,9 @@ export default function FilesArea({
 
     setIsUploading(true)
 
-    const filesToUpload = []
+    const filesToUpload: File[] = []
 
-    for (let i = 0; i < files['length']; i++) {
+    for (let i = 0; i < files.length; i++) {
       let file = files[i]
       const isValidTextType = textExtensions.some((ext) =>
         file.name.includes(ext)
@@ -87,14 +90,20 @@ export default function FilesArea({
         continue
       }
 
-      // Remove file from uploaded files in case we are replacing a file.
-      setUploadedFiles((prevState) =>
-        prevState?.filter((uploadedFile) => uploadedFile.name !== file.name)
-      )
       filesToUpload.push(file)
     }
 
+    // Remove any of these files from uploaded files state
+    // Remove file from uploaded files in case we are replacing a file.
+    setUploadedFiles((prevState) =>
+      prevState?.filter(
+        (f) => !filesToUpload.some((file) => file.name === f.name)
+      )
+    )
+
     setFilesToUpload(filesToUpload)
+    setUploadStartTime(Date.now())
+    setUploadSize(filesToUpload.reduce((acc, file) => acc + file.size, 0))
 
     for (const file of filesToUpload) {
       const storageRef = ref(
@@ -120,7 +129,9 @@ export default function FilesArea({
       }
     }
     setFilesToUpload([])
+    setUploadSize(undefined)
     setIsUploading(false)
+    setUploadStartTime(undefined)
   }
 
   return isFetchingExistingFiles ? (

@@ -8,7 +8,9 @@ import 'react-activity/dist/library.css'
 import {
   TbArrowLeft,
   TbCheck,
+  TbClock,
   TbExclamationCircle,
+  TbFile,
   TbRefresh,
 } from 'react-icons/tb'
 import 'react-tooltip/dist/react-tooltip.css'
@@ -21,15 +23,18 @@ import TimestampButton from '../components/TimestampButton'
 import { fbStorage } from '../firebase'
 import useJob from '../hooks/useJob'
 import useLanguage from '../hooks/useLanguage'
+import useRemainingTime from '../hooks/useRemainingTime'
 import { colors } from '../styles/colors'
 
-const audioExtensions = ['.wav', '.mp3']
-const textExtensions = ['.txt']
+export const audioExtensions = ['.wav', '.mp3']
+export const textExtensions = ['.txt', '.usfm']
 
 export default function Home() {
   const router = useRouter()
   const params = useSearchParams()
   const [sessionId, setSessionId] = useState<string>('')
+  const [uploadStartTime, setUploadStartTime] = useState<number>()
+  const [uploadSize, setUploadSize] = useState<number>()
 
   useEffect(() => {
     if (!params) return
@@ -76,6 +81,7 @@ export default function Home() {
    * Match audio files with text files.
    */
   const matches = useMemo(() => {
+    console.log('matches')
     const allFiles = [...(uploadedFiles ?? []), ...filesToUpload].filter(
       (file, index, array) =>
         array.findIndex((f) => f.name === file.name) === index
@@ -154,6 +160,8 @@ export default function Home() {
 
   useEffect(() => {
     async function getExistingFiles() {
+      if (!sessionId || sessionId === '') return
+
       if (matches.length === 0) {
         console.log('1')
         setIsFetchingExistingFiles(true)
@@ -176,10 +184,6 @@ export default function Home() {
     }
     getExistingFiles().catch(console.error)
   }, [sessionId, filesToUpload, setIsFetchingExistingFiles, jobStatus])
-
-  // useEffect(() => {
-  //   if (filesToUpload.length > 0 && !isUploading) handleUpload()
-  // }, [filesToUpload, isUploading])
 
   const icon = useMemo(() => {
     switch (jobStatus) {
@@ -212,6 +216,13 @@ export default function Home() {
         return null
     }
   }, [jobStatus])
+
+  // Usage in Home component
+  const { remainingTime, sizeOfUploaded, sizeRemaining } = useRemainingTime(
+    uploadStartTime,
+    filesToUpload,
+    uploadedFiles
+  )
 
   return jobStatus !== 'not_started' ? (
     <div className="flex flex-col w-full flex-1 items-center justify-center py-4">
@@ -306,13 +317,37 @@ export default function Home() {
         setQuery={setQuery}
         query={query}
       />
-      {/* <div className="flex flex-col gap-1 w-full">
-        <h2 className="text-f1 text-lg font-bold">Files</h2>
-        <p className="text-xs text-f2 mb-4">
-          Upload audio files and their text transcript files. Matches should
-          have the same name.
-        </p>
-      </div> */}
+      {remainingTime !== undefined && uploadSize !== undefined ? (
+        <div
+          className="flex flex-row items-center justify-center w-full bg-p1/10 rounded-xl p-4 mb-4
+            text-xs"
+        >
+          <Windmill size={24} color={colors.p1} />
+          <div className="flex flex-row items-center gap-4 flex-1 justify-center h-full">
+            <div className="flex flex-row items-center gap-4">
+              <TbFile className="size-6 text-p1" />
+              <div className="flex flex-col gap-1">
+                Upload progress
+                <span className="font-mono mr-4 font-bold text-base">
+                  {Math.round(sizeOfUploaded / 1024 / 1024)}mb /{' '}
+                  {Math.round(uploadSize / 1024 / 1024)}mb
+                </span>
+              </div>
+            </div>
+            <div className="h-full w-px bg-p1/20 rounded-lg" />
+            <div className="flex flex-row items-center gap-4">
+              <TbClock className="size-6 text-p1" />
+              <div className="flex flex-col gap-1">
+                Est. time remaining:
+                <div className="font-mono font-bold text-base">
+                  {new Date(remainingTime).toISOString().substring(11, 19)}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="w-6" />
+        </div>
+      ) : null}
       <FilesArea
         isUploading={isUploading}
         uploadedFiles={uploadedFiles}
@@ -325,6 +360,8 @@ export default function Home() {
         sessionId={sessionId}
         setIsUploading={setIsUploading}
         isFetchingExistingFiles={isFetchingExistingFiles}
+        setUploadStartTime={setUploadStartTime}
+        setUploadSize={setUploadSize}
       />
       <TimestampButton
         filesToUpload={filesToUpload}

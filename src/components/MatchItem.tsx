@@ -7,7 +7,6 @@ import {
   TbExclamationCircle,
   TbTrash,
 } from 'react-icons/tb'
-import { Tooltip } from 'react-tooltip'
 import { fbStorage } from '../firebase'
 import { colors } from '../styles/colors'
 
@@ -59,9 +58,24 @@ export default function MatchItem({
         sm:p-0 bg-p1/10 sm:bg-p1/0"
     >
       <div
-        className={`w-full flex-1 flex flex-row items-center card px-4 py-4
+        className={`w-full flex-1 flex flex-row items-center card px-4 py-4 gap-2
           ${!audioFile ? 'bg-p1/10' : ''}`}
       >
+        {audioFile ? (
+          deleting === audioFile ? (
+            <Windmill size={16} color={colors.p1} />
+          ) : isAudioUploaded ? (
+            <TbCheck
+              data-tooltip-id="audio-uploaded"
+              data-tooltip-content="Uploaded"
+              className="text-p1/40"
+            />
+          ) : isUploading ? (
+            <Windmill size={16} color={colors.p1} />
+          ) : null
+        ) : (
+          <TbExclamationCircle className="text-p1" />
+        )}
         {audioFile ? (
           <p className="flex-1 font-mono text-sm">
             {audioName}
@@ -70,89 +84,24 @@ export default function MatchItem({
         ) : (
           <p className="flex-1 text-sm">No audio file found</p>
         )}
-        {audioFile ? (
-          deleting === audioFile ? (
-            <span
-              data-tooltip-id="audio-deleting"
-              data-tooltip-content="Deleting..."
-            >
-              <Windmill size={16} color={colors.p1} />
-            </span>
-          ) : isAudioUploaded ? (
-            <div className="flex flex-row gap-2">
-              <button
-                data-tooltip-id="audio-delete"
-                data-tooltip-content="Delete"
-                onClick={() => deleteFile(audioFile)}
-              >
-                <TbTrash className="text-p1/40" />
-              </button>
-              <TbCheck
-                data-tooltip-id="audio-uploaded"
-                data-tooltip-content="Uploaded"
-                className="text-p1/40"
-              />
-            </div>
-          ) : isUploading ? (
-            <span
-              data-tooltip-id="audio-uploading"
-              data-tooltip-content="Uploading..."
-            >
-              <Windmill size={16} color={colors.p1} />
-            </span>
-          ) : null
-        ) : (
-          <TbExclamationCircle
-            data-tooltip-id="no-audio-match"
-            data-tooltip-content="Upload text with matching name."
-            className="text-p1"
-          />
-        )}
+        {isAudioUploaded && audioFile ? (
+          <button onClick={() => deleteFile(audioFile)}>
+            <TbTrash className="text-p1/40" />
+          </button>
+        ) : null}
       </div>
       <TbArrowsLeftRight className="text-f1 h-0 invisible sm:visible sm:h-auto" />
       <div
-        className={`w-full flex-1 flex flex-row items-center card px-4 py-4
+        className={`w-full flex-1 flex flex-row items-center card px-4 py-4 gap-2
           ${!textFile ? 'bg-p1/10' : ''}`}
       >
         {textFile ? (
-          <p className="flex-1 font-mono text-sm">
-            {textName}
-            <span className="text-f2">.{textExt}</span>
-          </p>
-        ) : (
-          <p className="flex-1 text-sm">No text file found</p>
-        )}
-        {textFile ? (
           deleting === textFile ? (
-            <span
-              data-tooltip-id="text-deleting"
-              data-tooltip-content="Deleting..."
-            >
-              <Windmill size={16} color={colors.p1} animating />
-            </span>
+            <Windmill size={16} color={colors.p1} animating />
           ) : isTextUploaded ? (
-            <div className="flex flex-row gap-2">
-              <button
-                data-tooltip-id="text-delete"
-                data-tooltip-content="Delete"
-                onClick={() => deleteFile(textFile)}
-                className="tooltip-parent group/uploaded"
-              >
-                <TbTrash className="text-p1/40" />
-              </button>
-              <TbCheck
-                data-tooltip-id="text-uploaded"
-                data-tooltip-content="Uploaded"
-                className="text-p1/40"
-              />
-            </div>
+            <TbCheck className="text-p1/40" />
           ) : isUploading ? (
-            <span
-              data-tooltip-id="text-uploading"
-              data-tooltip-content="Uploading..."
-            >
-              <Windmill size={16} color={colors.p1} />
-            </span>
+            <Windmill size={16} color={colors.p1} />
           ) : null
         ) : (
           <TbExclamationCircle
@@ -161,8 +110,21 @@ export default function MatchItem({
             className="text-p1"
           />
         )}
+        {textFile ? (
+          <p className="flex-1 font-mono text-sm">
+            {textName}
+            <span className="text-f2">.{textExt}</span>
+          </p>
+        ) : (
+          <p className="flex-1 text-sm">No text file found</p>
+        )}
+        {isTextUploaded && textFile ? (
+          <button onClick={() => deleteFile(textFile)}>
+            <TbTrash className="text-p1/40" />
+          </button>
+        ) : null}
       </div>
-      <Tooltip id="no-audio-match" />
+      {/* <Tooltip id="no-audio-match" />
       <Tooltip id="no-text-match" />
       <Tooltip id="text-uploading" />
       <Tooltip id="text-uploaded" />
@@ -171,7 +133,7 @@ export default function MatchItem({
       <Tooltip id="audio-uploading" />
       <Tooltip id="audio-uploaded" />
       <Tooltip id="audio-delete" />
-      <Tooltip id="audio-deleting" />
+      <Tooltip id="audio-deleting" /> */}
     </div>
   )
 }

@@ -37,8 +37,8 @@ export default function TimestampButton({
 
   async function handleSubmit() {
     startJob()
-    const baseUrl = 'http://34.81.60.7:8000'
-    // const baseUrl = 'http://localhost:8000'
+    // const baseUrl = 'http://34.81.60.7:8000'
+    const baseUrl = 'http://localhost:8000'
 
     const url = `${baseUrl}/?lang=${selectedLanguage?.iso}&session-id=${sessionId}`
     console.log('Fetching from', url)
