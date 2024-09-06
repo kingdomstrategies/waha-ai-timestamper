@@ -85,7 +85,7 @@ export default function useJob({
   }, [])
 
   useEffect(() => {
-    if (!isSignedIn) return
+    if (!isSignedIn || sessionId === '') return
 
     const unsub = onSnapshot(doc(fbDb, 'sessions', sessionId), (doc) => {
       if (doc.exists()) {
@@ -101,7 +101,7 @@ export default function useJob({
     })
 
     return () => unsub()
-  }, [isSignedIn])
+  }, [isSignedIn, sessionId])
 
   useEffect(() => {
     if (query !== '') setHasSetExistingLanguage(true)
