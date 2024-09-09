@@ -39,8 +39,7 @@ export default function HelpModal({ open, setOpen }: Props) {
                 <div className="flex flex-col w-full">
                   <div className="w-full justify-end flex flex-row">
                     <DialogTitle as="h3" className="text-lg flex-1 font-bold">
-                      Introducing{' '}
-                      <span className="font-mono text-p1">timestamp.audio</span>
+                      Introducing Timestamp Audio
                     </DialogTitle>
                     <button
                       className="btn px-2 py-2"

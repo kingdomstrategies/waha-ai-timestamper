@@ -1,7 +1,7 @@
 'use client'
 import { ref, uploadBytes } from 'firebase/storage'
 import { enqueueSnackbar } from 'notistack'
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, SetStateAction, useEffect } from 'react'
 import { Windmill } from 'react-activity'
 import 'react-activity/dist/library.css'
 import { TbUpload } from 'react-icons/tb'
@@ -31,6 +31,10 @@ interface Props {
   isFetchingExistingFiles: boolean
   setUploadStartTime: Dispatch<SetStateAction<number | undefined>>
   setUploadSize: Dispatch<SetStateAction<number | undefined>>
+  sessionTextExt: string | undefined
+  setSessionTextExt: Dispatch<SetStateAction<string | undefined>>
+  sessionAudioExt: string | undefined
+  setSessionAudioExt: Dispatch<SetStateAction<string | undefined>>
 }
 export default function FilesArea({
   isUploading,
@@ -46,7 +50,49 @@ export default function FilesArea({
   isFetchingExistingFiles,
   setUploadStartTime,
   setUploadSize,
+  sessionAudioExt,
+  sessionTextExt,
+  setSessionAudioExt,
+  setSessionTextExt,
 }: Props) {
+  useEffect(() => {
+    if (!uploadedFiles) {
+      // setSessionTextExt(undefined)
+      // setSessionAudioExt(undefined)
+      return
+    }
+
+    if (!sessionTextExt) {
+      const uploadedTextExt = uploadedFiles
+        .find((f) => textExtensions.some((ext) => f.name.includes(ext)))
+        ?.name.split('.')
+        .pop()
+      console.log('uploadedTextExt', uploadedTextExt)
+      setSessionTextExt(uploadedTextExt)
+    }
+    if (!sessionAudioExt) {
+      const uploadedAudioExt = uploadedFiles
+        .find((f) => audioExtensions.some((ext) => f.name.includes(ext)))
+        ?.name.split('.')
+        .pop()
+      console.log('uploadedAudioExt', uploadedAudioExt)
+      setSessionAudioExt(uploadedAudioExt)
+    }
+  }, [
+    sessionAudioExt,
+    sessionTextExt,
+    setSessionAudioExt,
+    setSessionTextExt,
+    uploadedFiles,
+  ])
+
+  console.log(
+    'sessionTextExt',
+    sessionTextExt,
+    'sessionAudioExt',
+    sessionAudioExt
+  )
+
   async function onDragOrSelect(files: FileList | null) {
     if (!files) {
       enqueueSnackbar('No files selected.')
@@ -86,6 +132,31 @@ export default function FilesArea({
       if (size > 1000) {
         enqueueSnackbar(
           `Ignoring file "${file.name}" due to file size exceeding 1GB.`
+        )
+        continue
+      }
+
+      if (!sessionTextExt && isValidTextType)
+        setSessionTextExt(file.name.split('.').pop())
+      if (!sessionAudioExt && isValidAudioType)
+        setSessionAudioExt(file.name.split('.').pop())
+
+      if (
+        isValidTextType &&
+        sessionTextExt &&
+        sessionTextExt !== file.name.split('.').pop()
+      ) {
+        enqueueSnackbar(
+          `Ignoring file "${file.name}" due to different file type.`
+        )
+        continue
+      } else if (
+        isValidAudioType &&
+        sessionAudioExt &&
+        sessionAudioExt !== file.name.split('.').pop()
+      ) {
+        enqueueSnackbar(
+          `Ignoring file "${file.name}" due to different file type.`
         )
         continue
       }

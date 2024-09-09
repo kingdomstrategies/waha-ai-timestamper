@@ -15,7 +15,7 @@ export default function DownloadButton({
   setDownloadType,
 }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 w-full mb-8">
+    <div className="flex flex-col items-center justify-center gap-4 w-full mb-8 mt-12">
       <Field className="w-full gap-2 flex flex-col">
         <h2 className="text-f1 text-lg font-bold mb-1">Download Format</h2>
         <RadioGroup
@@ -27,8 +27,11 @@ export default function DownloadButton({
             <Radio
               key={type.type}
               value={type.type}
-              className="bg-b2 flex w-full flex-row items-center gap-4 cursor-pointer rounded-lg p-4
-                shadow-sm transition hover:bg-p1/10 hover:shadow-lg"
+              className={({ checked }) =>
+                `bg-b2 flex w-full flex-row items-center gap-4 cursor-pointer rounded-lg p-4
+                shadow-sm transition hover:bg-p1/10 hover:shadow-lg
+                ${checked ? 'bg-p1/5 shadow-lg' : ''}`
+              }
             >
               {({ checked }) => (
                 <>

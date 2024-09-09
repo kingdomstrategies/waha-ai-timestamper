@@ -10,6 +10,7 @@ interface Props {
   startJob: () => void
   resetStatus: () => void
   sessionId: string
+  separator: string
 }
 
 export default function TimestampButton({
@@ -20,6 +21,7 @@ export default function TimestampButton({
   sessionId,
   startJob,
   resetStatus,
+  separator,
 }: Props) {
   const errorMessage = useMemo(() => {
     if (filesToUpload.length !== 0 || isUploading) {
@@ -32,15 +34,16 @@ export default function TimestampButton({
       return 'Every audio file must have a matching text file (and vice versa)'
     } else if (!selectedLanguage) {
       return 'Please select a language.'
-    } else return
-  }, [filesToUpload, isUploading, matches, selectedLanguage])
+    } else if (separator === '') return 'Please enter a custom separator'
+    else return
+  }, [filesToUpload.length, isUploading, matches, selectedLanguage, separator])
 
   async function handleSubmit() {
     startJob()
-    const baseUrl = 'http://34.81.60.7:8000'
-    // const baseUrl = 'http://localhost:8000'
+    // const baseUrl = 'http://34.81.60.7:8000'
+    const baseUrl = 'http://localhost:8000'
 
-    const url = `${baseUrl}/?lang=${selectedLanguage?.iso}&session-id=${sessionId}`
+    const url = `${baseUrl}/?lang=${selectedLanguage?.iso}&session-id=${sessionId}&separator=${separator}`
     console.log('Fetching from', url)
     fetch(url)
   }

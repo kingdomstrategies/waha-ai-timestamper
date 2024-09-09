@@ -82,7 +82,7 @@ export default function MatchItem({
             <span className="text-f2">.{audioExt}</span>
           </p>
         ) : (
-          <p className="flex-1 text-sm">No audio file found</p>
+          <p className="flex-1 text-sm text-f2">No audio file found</p>
         )}
         {isAudioUploaded && audioFile ? (
           <button onClick={() => deleteFile(audioFile)}>
@@ -116,7 +116,7 @@ export default function MatchItem({
             <span className="text-f2">.{textExt}</span>
           </p>
         ) : (
-          <p className="flex-1 text-sm">No text file found</p>
+          <p className="flex-1 text-sm text-f2">No text file found</p>
         )}
         {isTextUploaded && textFile ? (
           <button onClick={() => deleteFile(textFile)}>
@@ -124,16 +124,6 @@ export default function MatchItem({
           </button>
         ) : null}
       </div>
-      {/* <Tooltip id="no-audio-match" />
-      <Tooltip id="no-text-match" />
-      <Tooltip id="text-uploading" />
-      <Tooltip id="text-uploaded" />
-      <Tooltip id="text-delete" />
-      <Tooltip id="text-deleting" />
-      <Tooltip id="audio-uploading" />
-      <Tooltip id="audio-uploaded" />
-      <Tooltip id="audio-delete" />
-      <Tooltip id="audio-deleting" /> */}
     </div>
   )
 }

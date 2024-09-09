@@ -34,9 +34,7 @@ export default function Header({ jobStatus, resetStatus, sessionId }: Props) {
           fill={colors.p1}
         />
       </svg>
-      <h1 className="font-mono text-p1 text-2xl font-bold flex-1">
-        timestamp.audio
-      </h1>
+      <h1 className="text-p1 text-2xl font-bold flex-1">Timestamp Audio</h1>
       <button className="btn px-4 py-2" onClick={() => setShowModal(true)}>
         <TbHelp className="size-4 text-p1" />
         Help

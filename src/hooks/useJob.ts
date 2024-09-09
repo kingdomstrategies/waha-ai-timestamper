@@ -4,6 +4,7 @@ import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import JSZip from 'jszip'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { stringify } from 'yaml'
+import { Separator } from '../components/SeparatorSelect'
 import { fbAuth, fbDb } from '../firebase'
 import { MmsLanguage } from './useLanguage'
 
@@ -36,7 +37,10 @@ interface SessionDoc {
   progress?: number
   current?: string
   language?: string
+  start?: number
+  end?: number
   timestamps?: FileTimestamps[]
+  separator?: string
 }
 
 interface Props {
@@ -79,6 +83,9 @@ export default function useJob({
   const [progress, setProgress] = useState<number | undefined>()
   const [current, setCurrent] = useState<string | undefined>()
   const [error, setError] = useState<string | undefined>()
+  const [startTime, setStartTime] = useState<number | undefined>()
+  const [endTime, setEndTime] = useState<number | undefined>()
+  const [separator, setSeparator] = useState<Separator | string>('lineBreak')
 
   useEffect(() => {
     signInAnonymously(fbAuth).then(() => setIsSignedIn(true))
@@ -97,6 +104,9 @@ export default function useJob({
         if (data.progress !== undefined) setProgress(data.progress)
         if (data.current !== undefined) setCurrent(data.current)
         if (data.error !== undefined) setError(data.error)
+        if (data.start !== undefined) setStartTime(data.start)
+        if (data.end !== undefined) setEndTime(data.end)
+        if (data.separator !== undefined) setSeparator(data.separator)
       } else resetStatus()
     })
 
@@ -120,6 +130,13 @@ export default function useJob({
     updateLanguage(selectedLanguage.iso)
   }, [isSignedIn, selectedLanguage])
 
+  const updateSeparator = async (separator: string) => {
+    await setDoc(
+      doc(fbDb, 'sessions', sessionId),
+      { separator },
+      { merge: true }
+    )
+  }
   const updateLanguage = async (language: string) => {
     await setDoc(
       doc(fbDb, 'sessions', sessionId),
@@ -197,5 +214,10 @@ export default function useJob({
     progress,
     current,
     error,
+    startTime,
+    endTime,
+    separator,
+    setSeparator,
+    updateSeparator,
   }
 }

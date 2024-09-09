@@ -19,10 +19,9 @@ export default function LanguageSelector({
 }: Props) {
   return (
     <div className="w-full flex flex-col mb-6">
-      {/* <h2 className="text-f1 text-lg font-bold mb-1">Language</h2>
-      <p className="text-xs text-f2 mb-4">
-        Select the language of the text and audio files you are uploading.
-      </p> */}
+      <h2 className="text-sm mb-2">
+        <span className="font-bold">Step 1:</span> Select Language
+      </h2>
       <div className="flex flex-row w-full items-center gap-2">
         <input
           value={query}

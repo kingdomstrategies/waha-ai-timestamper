@@ -9,9 +9,11 @@ import {
   TbArrowLeft,
   TbCheck,
   TbClock,
+  TbCopy,
   TbExclamationCircle,
   TbFile,
   TbRefresh,
+  TbZzz,
 } from 'react-icons/tb'
 import 'react-tooltip/dist/react-tooltip.css'
 import { v4 as uuidv4 } from 'uuid'
@@ -25,6 +27,7 @@ import useJob from '../hooks/useJob'
 import useLanguage from '../hooks/useLanguage'
 import useRemainingTime from '../hooks/useRemainingTime'
 import { colors } from '../styles/colors'
+import SeparatorSelect from './SeparatorSelect'
 
 export const audioExtensions = ['.wav', '.mp3']
 export const textExtensions = ['.txt', '.usfm']
@@ -56,8 +59,9 @@ export default function Home() {
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string }[]>()
   const [isUploading, setIsUploading] = useState(false)
   const [isFetchingExistingFiles, setIsFetchingExistingFiles] = useState(false)
-
   const { languages, selectedLanguage, setQuery, query } = useLanguage()
+  const [sessionTextExt, setSessionTextExt] = useState<string>()
+  const [sessionAudioExt, setSessionAudioExt] = useState<string>()
 
   const {
     jobStatus,
@@ -70,6 +74,11 @@ export default function Home() {
     error,
     progress,
     total,
+    endTime,
+    startTime,
+    separator,
+    setSeparator,
+    updateSeparator,
   } = useJob({
     sessionId,
     selectedLanguage,
@@ -207,15 +216,20 @@ export default function Home() {
       case 'starting':
         return 'Starting timestamping...'
       case 'in_progress':
-        return 'Timestamping in progress...'
+        if (progress === undefined || total === undefined)
+          return 'Timestamping in progress...'
+        else
+          return `Timestamping file ${progress + 1} of ${Math.min(progress + 1, total)}...`
       case 'done':
-        return 'Timestamping finished!'
+        if (!endTime || !startTime) return 'Timestamping finished.'
+        else
+          return `Timestamping finished in ${new Date((endTime - startTime) * 1000).toISOString().substring(11, 19)}!`
       case 'failed':
         return 'Timestamping failed.'
       default:
         return null
     }
-  }, [jobStatus])
+  }, [endTime, jobStatus, progress, startTime, total])
 
   // Usage in Home component
   const { remainingTime, sizeOfUploaded, sizeRemaining } = useRemainingTime(
@@ -231,30 +245,23 @@ export default function Home() {
         resetStatus={resetStatus}
         sessionId={sessionId}
       />
-      <div
-        className="w-full flex flex-col items-center justify-center border rounded-xl border-p1/10
-          p-4 flex-1"
-      >
-        <div className="flex flex-col items-center justify-center gap-4 mb-12">
+      <div className="w-full flex flex-col items-center justify-center flex-1">
+        <div className="flex flex-col items-center justify-center gap-4 mb-2">
           {icon}
           <p className="text-f1 font-bold text-xl">{statusText}</p>
+          {jobStatus === 'in_progress' && current ? (
+            <div className="pill font-mono">{current}</div>
+          ) : null}
         </div>
         {jobStatus === 'in_progress' ? (
-          <div className="flex flex-col w-full items-center gap-2 text-center">
-            {current ? (
-              <div className="flex flex-row items-center gap-2 mb-2">
-                <p>Currently processing:</p>
-                <div className="pill font-mono">{current}</div>
-              </div>
-            ) : null}
-            {progress !== undefined && total !== undefined ? (
-              <p className="text-xs mb-2">
-                {progress} of {total} files processed
-              </p>
-            ) : null}
-            <p>
-              You can safely close this page. Return to this url to download the
-              results when they are finished.
+          <div className="flex flex-col w-full items-start gap-2 text-center bg-p1/5 rounded-xl p-4 mt-8">
+            <div className="flex flex-row items-center gap-2">
+              <TbZzz className="text-p1 size-6" />
+              <h2 className="font-bold">Taking too long?</h2>
+            </div>
+            <p className="text-xs text-f2 mb-1">
+              You can safely close this page and return to this url to download
+              the results when they are finished.
             </p>
             <button
               onClick={() => {
@@ -266,6 +273,7 @@ export default function Home() {
               }}
               className="btn text-xs font-bold text-p1 px-2 py-1 border border-p1/10 rounded-lg"
             >
+              <TbCopy className="size-4 text-p1" />
               Copy url to clipboard
             </button>
           </div>
@@ -286,7 +294,7 @@ export default function Home() {
       </div>
       {jobStatus === 'done' || jobStatus === 'failed' ? (
         <>
-          <button className="btn w-full my-4" onClick={resetStatus}>
+          <button className="btn w-full mt-4 mb-2" onClick={resetStatus}>
             <TbArrowLeft className="size-4" />
             Back to session
           </button>
@@ -317,6 +325,9 @@ export default function Home() {
         setQuery={setQuery}
         query={query}
       />
+      <h2 className="text-sm mb-2">
+        <span className="font-bold">Step 2:</span> Upload Files
+      </h2>
       {remainingTime !== undefined && uploadSize !== undefined ? (
         <div
           className="flex flex-row items-center justify-center w-full bg-p1/10 rounded-xl p-4 mb-4
@@ -362,7 +373,18 @@ export default function Home() {
         isFetchingExistingFiles={isFetchingExistingFiles}
         setUploadStartTime={setUploadStartTime}
         setUploadSize={setUploadSize}
+        sessionAudioExt={sessionAudioExt}
+        sessionTextExt={sessionTextExt}
+        setSessionAudioExt={setSessionAudioExt}
+        setSessionTextExt={setSessionTextExt}
       />
+      {sessionTextExt === 'txt' ? (
+        <SeparatorSelect
+          separator={separator}
+          setSeparator={setSeparator}
+          updateSeparator={updateSeparator}
+        />
+      ) : null}
       <TimestampButton
         filesToUpload={filesToUpload}
         isUploading={isUploading}
@@ -371,6 +393,7 @@ export default function Home() {
         sessionId={sessionId}
         startJob={startJob}
         resetStatus={resetStatus}
+        separator={separator}
       />
       <SnackbarProvider autoHideDuration={3000} />
     </div>
