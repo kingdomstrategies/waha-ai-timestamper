@@ -3,7 +3,7 @@ import { listAll, ref } from 'firebase/storage'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { enqueueSnackbar, SnackbarProvider } from 'notistack'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Windmill } from 'react-activity'
+import { Sentry, Windmill } from 'react-activity'
 import 'react-activity/dist/library.css'
 import {
   TbArrowLeft,
@@ -79,6 +79,7 @@ export default function Home() {
     separator,
     setSeparator,
     updateSeparator,
+    totalLength,
   } = useJob({
     sessionId,
     selectedLanguage,
@@ -199,7 +200,7 @@ export default function Home() {
       case 'in_progress':
       case 'starting':
       case undefined:
-        return <Windmill color={colors.p1} size={48} animating />
+        return <Sentry color={colors.p1} size={48} animating />
       case 'done':
         return <TbCheck className="size-12 text-p1" />
       case 'failed':
@@ -219,20 +220,21 @@ export default function Home() {
         if (progress === undefined || total === undefined)
           return 'Timestamping in progress...'
         else
-          return `Timestamping file ${progress + 1} of ${Math.min(progress + 1, total)}...`
+          return `Timestamping file ${Math.min(progress + 1, total)} of ${total}...`
       case 'done':
-        if (!endTime || !startTime) return 'Timestamping finished.'
+        if (!endTime || !startTime || !totalLength)
+          return 'Timestamping finished.'
         else
-          return `Timestamping finished in ${new Date((endTime - startTime) * 1000).toISOString().substring(11, 19)}!`
+          return `Timestamping finished in ${new Date((endTime - startTime) * 1000).toISOString().substring(11, 19)}, and you saved ${new Date(totalLength * 1000 * 1.2).toISOString().substring(11, 19)} of time!`
       case 'failed':
         return 'Timestamping failed.'
       default:
         return null
     }
-  }, [endTime, jobStatus, progress, startTime, total])
+  }, [endTime, jobStatus, progress, startTime, total, totalLength])
 
   // Usage in Home component
-  const { remainingTime, sizeOfUploaded, sizeRemaining } = useRemainingTime(
+  const { remainingTime, sizeOfUploaded } = useRemainingTime(
     uploadStartTime,
     filesToUpload,
     uploadedFiles

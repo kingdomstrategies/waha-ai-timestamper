@@ -41,6 +41,7 @@ interface SessionDoc {
   end?: number
   timestamps?: FileTimestamps[]
   separator?: string
+  total_length?: number
 }
 
 interface Props {
@@ -86,6 +87,7 @@ export default function useJob({
   const [startTime, setStartTime] = useState<number | undefined>()
   const [endTime, setEndTime] = useState<number | undefined>()
   const [separator, setSeparator] = useState<Separator | string>('lineBreak')
+  const [totalLength, setTotalLength] = useState<number | undefined>()
 
   useEffect(() => {
     signInAnonymously(fbAuth).then(() => setIsSignedIn(true))
@@ -107,6 +109,7 @@ export default function useJob({
         if (data.start !== undefined) setStartTime(data.start)
         if (data.end !== undefined) setEndTime(data.end)
         if (data.separator !== undefined) setSeparator(data.separator)
+        if (data.total_length !== undefined) setTotalLength(data.total_length)
       } else resetStatus()
     })
 
@@ -219,5 +222,6 @@ export default function useJob({
     separator,
     setSeparator,
     updateSeparator,
+    totalLength,
   }
 }
