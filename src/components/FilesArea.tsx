@@ -216,7 +216,7 @@ export default function FilesArea({
   ) : (
     <div
       className={`${dragActive ? 'bg-p1/10' : ''} transition flex flex-col w-full flex-1 px-4
-        h-full border-dashed border border-p1/40 rounded-xl overflow-y-auto gap-8`}
+        border-dashed border border-p1/40 rounded-xl overflow-y-auto gap-8 min-h-0`}
       onDragEnter={(e) => {
         e.preventDefault()
         e.stopPropagation()

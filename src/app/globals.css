@@ -19,7 +19,7 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center rounded-xl border-p1/10 border font-medium text-center text-base leading-snug py-3.5 px-6 gap-2 md:px-8 ease-in focus:ring-2 focus:ring-offset-2 cursor-pointer duration-200 hover:shadow-lg hover:bg-p1/20;
+    @apply text-p1 inline-flex items-center justify-center rounded-xl border-p1/10 border font-medium text-center text-base leading-snug py-3.5 px-6 gap-2 md:px-8 ease-in focus:ring-2 focus:ring-offset-2 cursor-pointer duration-200 hover:shadow-lg hover:bg-p1/5;
   }
 
   .btn-primary {
@@ -46,7 +46,7 @@
     @apply font-mono flex flex-row justify-center items-center rounded-full text-center py-2 px-3 bg-p1/20 text-p1 font-bold text-xs;
   }
 
-  .page {
-    @apply px-4 flex min-h-screen flex-col items-center w-full max-w-3xl
+  .content {
+    @apply max-w-2xl;
   }
 }

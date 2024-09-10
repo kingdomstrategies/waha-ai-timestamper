@@ -1,13 +1,13 @@
 'use client'
 import { listAll, ref } from 'firebase/storage'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { enqueueSnackbar, SnackbarProvider } from 'notistack'
+import { enqueueSnackbar } from 'notistack'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Sentry, Windmill } from 'react-activity'
 import 'react-activity/dist/library.css'
 import {
   TbArrowLeft,
-  TbCheck,
+  TbCircleCheck,
   TbClock,
   TbCopy,
   TbExclamationCircle,
@@ -19,7 +19,6 @@ import 'react-tooltip/dist/react-tooltip.css'
 import { v4 as uuidv4 } from 'uuid'
 import DownloadButton from '../components/DownloadButon'
 import FilesArea from '../components/FilesArea'
-import Header from '../components/Header'
 import LanguageSelector from '../components/LanguageSelector'
 import TimestampButton from '../components/TimestampButton'
 import { fbStorage } from '../firebase'
@@ -202,7 +201,7 @@ export default function Home() {
       case undefined:
         return <Sentry color={colors.p1} size={48} animating />
       case 'done':
-        return <TbCheck className="size-12 text-p1" />
+        return <TbCircleCheck className="size-12 text-p1" />
       case 'failed':
         return <TbExclamationCircle className="size-12 text-p1" />
       default:
@@ -241,16 +240,11 @@ export default function Home() {
   )
 
   return jobStatus !== 'not_started' ? (
-    <div className="flex flex-col w-full flex-1 items-center justify-center py-4">
-      <Header
-        jobStatus={jobStatus}
-        resetStatus={resetStatus}
-        sessionId={sessionId}
-      />
-      <div className="w-full flex flex-col items-center justify-center flex-1">
+    <>
+      <div className="content w-full flex flex-col items-center justify-center flex-1">
         <div className="flex flex-col items-center justify-center gap-4 mb-2">
           {icon}
-          <p className="text-f1 font-bold text-xl">{statusText}</p>
+          <p className="text-f1 font-bold text-xl text-center">{statusText}</p>
           {jobStatus === 'in_progress' && current ? (
             <div className="pill font-mono">{current}</div>
           ) : null}
@@ -269,7 +263,7 @@ export default function Home() {
               onClick={() => {
                 // Copy to clipboard
                 navigator.clipboard.writeText(
-                  `http://localhost:3000/?sessionId=${sessionId}`
+                  `http://timestampaudio.com/?sessionId=${sessionId}`
                 )
                 enqueueSnackbar('Copied!')
               }}
@@ -301,7 +295,7 @@ export default function Home() {
             Back to session
           </button>
           <button
-            className="btn w-full"
+            className="btn w-full mb-4"
             onClick={() => {
               router.replace('/')
               location.reload()
@@ -312,15 +306,9 @@ export default function Home() {
           </button>
         </>
       ) : null}
-      <SnackbarProvider autoHideDuration={3000} />
-    </div>
+    </>
   ) : (
-    <div className="flex flex-col w-full flex-1 pt-4 h-dvh">
-      <Header
-        jobStatus={jobStatus}
-        resetStatus={resetStatus}
-        sessionId={sessionId}
-      />
+    <>
       <LanguageSelector
         languages={languages}
         selectedLanguage={selectedLanguage}
@@ -397,7 +385,6 @@ export default function Home() {
         resetStatus={resetStatus}
         separator={separator}
       />
-      <SnackbarProvider autoHideDuration={3000} />
-    </div>
+    </>
   )
 }

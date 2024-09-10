@@ -30,7 +30,7 @@ export default function LanguageSelector({
           name="myFruit"
           id="myFruit"
           list="languages"
-          className={`w-full p-4 rounded-lg shadow-md border
+          className={`w-full p-2 rounded-md shadow-md border
             ${selectedLanguage === null ? 'border-p1' : 'border-b2'}`}
           placeholder="Select from 1000+ languages"
           spellCheck="false"
