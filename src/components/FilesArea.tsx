@@ -288,13 +288,17 @@ export default function FilesArea({
             </p>
           ))}
         </div>
-        <p className="text-xs text-f2 text-center">
+        <div className="p-4 text-xs text-f2 bg-f2/10 rounded-lg flex flex-col w-full gap-1">
           Audio and their corresponding text files should have the same name but
-          different extensions, e.g.{' '}
-          <span className="font-mono bg-f2/10 p-1 rounded-lg">GEN.1.mp3</span>{' '}
-          and{' '}
-          <span className="font-mono bg-f2/10 p-1 rounded-lg">GEN.1.txt</span>
-        </p>
+          different extensions
+          <p>
+            For example, you can upload{' '}
+            <span className="font-mono bg-f2/10 p-1 rounded-lg">GEN.1.mp3</span>{' '}
+            and{' '}
+            <span className="font-mono bg-f2/10 p-1 rounded-lg">GEN.1.txt</span>
+            .
+          </p>
+        </div>
       </div>
     </div>
   )
