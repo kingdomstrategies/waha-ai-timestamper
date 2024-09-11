@@ -33,8 +33,8 @@ export default function TimestampButton({
 
   async function handleSubmit() {
     startJob()
-    // const baseUrl = 'http://34.81.60.7:8000'
-    const baseUrl = 'http://localhost:8000'
+    const baseUrl = 'http://192.9.233.29:8000'
+    // const baseUrl = 'http://localhost:8000'
 
     const url = `${baseUrl}/?session-id=${sessionId}&separator=${separator}`
     console.log('Fetching from', url)
@@ -47,7 +47,7 @@ export default function TimestampButton({
         data-tooltip-id="button"
         data-tooltip-content={errorMessage}
         disabled={errorMessage !== undefined}
-        className={`btn-primary ${errorMessage !== undefined ? 'btn-disabled' : ''} w-full my-4`}
+        className={`btn-primary ${errorMessage !== undefined ? 'btn-disabled' : ''} w-full mt-4`}
         onClick={handleSubmit}
       >
         {`Timestamp!`}
