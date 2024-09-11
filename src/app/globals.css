@@ -35,7 +35,7 @@
   }
 
   .btn-disabled {
-    @apply btn cursor-not-allowed bg-f2/0 border-f2/20 hover:shadow-none hover:bg-f2/0 hover:border-f2/20 text-f2 hover:text-f2;
+    @apply btn cursor-not-allowed bg-f2/10 border-f2/20 hover:shadow-none hover:bg-f2/10 hover:border-f2/20 text-f2 hover:text-f2;
   }
 
   .card {

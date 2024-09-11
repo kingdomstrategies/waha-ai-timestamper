@@ -19,8 +19,8 @@ export default function RootLayout({
           <div className="max-w-2xl w-full px-4 flex-1 flex flex-col overflow-auto">
             {children}
           </div>
-          <div className="w-full pb-1 px-4 text-xs text-f2 text-center">
-            Made with love by the Waha team. © 2021
+          <div className="w-full pb-1 pt-2 px-4 text-xs text-f2 text-center">
+            Made with love by the Waha team. © 2024
           </div>
         </div>
       </body>
