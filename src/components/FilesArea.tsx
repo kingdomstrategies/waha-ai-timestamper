@@ -281,7 +281,7 @@ export default function FilesArea({
             <u className="text-p1">or browse</u>
           </p>
         </div>
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row gap-2 mb-4">
           {[...audioExtensions, ...textExtensions].map((ext) => (
             <p key={ext} className="pill">
               {ext}
