@@ -20,7 +20,11 @@ export default function RootLayout({
             {children}
           </div>
           <div className="w-full pb-1 pt-2 px-4 text-xs text-f2 text-center">
-            Made with love by the Waha team. © 2024
+            Made with ❤️ by the{' '}
+            <a href="https://waha.app" className="underline">
+              Waha
+            </a>{' '}
+            team. © 2024
           </div>
         </div>
       </body>
