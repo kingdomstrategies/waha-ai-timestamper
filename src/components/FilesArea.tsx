@@ -268,18 +268,17 @@ export default function FilesArea({
         <TbUpload className="size-8 text-p1" />
         <div className="flex flex-col w-full items-center">
           <p className="text-center">
-            Drag and drop files audio and text files you want to align here
+            Drag and drop audio and text files you want to align here
           </p>
-          <p>
-            <span
-              className="font-bold cursor-pointer"
-              onClick={() => {
-                inputRef.current.value = ''
-                inputRef.current.click()
-              }}
-            >
-              <u className="text-p1">or browse</u>
-            </span>
+
+          <p
+            className="font-bold cursor-pointer"
+            onClick={() => {
+              inputRef.current.value = ''
+              inputRef.current.click()
+            }}
+          >
+            <u className="text-p1">or browse</u>
           </p>
         </div>
         <div className="flex flex-row gap-2">
@@ -289,6 +288,13 @@ export default function FilesArea({
             </p>
           ))}
         </div>
+        <p className="text-xs text-f2 text-center">
+          Audio and their corresponding text files should have the same name but
+          different extensions, e.g.{' '}
+          <span className="font-mono bg-f2/10 p-1 rounded-lg">GEN.1.mp3</span>{' '}
+          and{' '}
+          <span className="font-mono bg-f2/10 p-1 rounded-lg">GEN.1.txt</span>
+        </p>
       </div>
     </div>
   )
