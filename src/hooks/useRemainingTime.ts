@@ -25,7 +25,7 @@ export default function useRemainingTime(
 
   useInterval(
     () => {
-      if (!uploadStartTime) return
+      if (!uploadStartTime || sizeOfUploaded === 0) return
 
       const elapsedTime = Date.now() - uploadStartTime
       const averageTimePerByte = elapsedTime / sizeOfUploaded
