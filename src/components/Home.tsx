@@ -19,11 +19,9 @@ import 'react-tooltip/dist/react-tooltip.css'
 import { v4 as uuidv4 } from 'uuid'
 import DownloadButton from '../components/DownloadButon'
 import FilesArea from '../components/FilesArea'
-import LanguageSelector from '../components/LanguageSelector'
 import TimestampButton from '../components/TimestampButton'
 import { fbStorage } from '../firebase'
 import useJob from '../hooks/useJob'
-import useLanguage from '../hooks/useLanguage'
 import useRemainingTime from '../hooks/useRemainingTime'
 import { colors } from '../styles/colors'
 import SeparatorSelect from './SeparatorSelect'
@@ -58,7 +56,6 @@ export default function Home() {
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string }[]>()
   const [isUploading, setIsUploading] = useState(false)
   const [isFetchingExistingFiles, setIsFetchingExistingFiles] = useState(false)
-  const { languages, selectedLanguage, setQuery, query } = useLanguage()
   const [sessionTextExt, setSessionTextExt] = useState<string>()
   const [sessionAudioExt, setSessionAudioExt] = useState<string>()
 
@@ -79,11 +76,9 @@ export default function Home() {
     setSeparator,
     updateSeparator,
     totalLength,
+    language,
   } = useJob({
     sessionId,
-    selectedLanguage,
-    query,
-    setQuery,
   })
 
   /**
@@ -249,6 +244,9 @@ export default function Home() {
             <div className="pill font-mono">{current}</div>
           ) : null}
         </div>
+        {(jobStatus === 'in_progress' || jobStatus === 'done') && language ? (
+          <p className="text-sm text-f2">Language identified as {language}.</p>
+        ) : null}
         {jobStatus === 'in_progress' ? (
           <div className="flex flex-col w-full items-start gap-2 text-center bg-p1/5 rounded-xl p-4 mt-8">
             <div className="flex flex-row items-center gap-2">
@@ -309,15 +307,15 @@ export default function Home() {
     </>
   ) : (
     <>
-      <LanguageSelector
+      {/* <LanguageSelector
         languages={languages}
         selectedLanguage={selectedLanguage}
         setQuery={setQuery}
         query={query}
-      />
-      <h2 className="text-sm mb-2">
+      /> */}
+      {/* <h2 className="text-sm mb-2">
         <span className="font-bold">Step 2:</span> Upload Files
-      </h2>
+      </h2> */}
       {remainingTime !== undefined && uploadSize !== undefined ? (
         <div
           className="flex flex-row items-center justify-center w-full bg-p1/10 rounded-xl p-4 mb-4
@@ -379,10 +377,8 @@ export default function Home() {
         filesToUpload={filesToUpload}
         isUploading={isUploading}
         matches={matches}
-        selectedLanguage={selectedLanguage}
         sessionId={sessionId}
         startJob={startJob}
-        resetStatus={resetStatus}
         separator={separator}
       />
     </>

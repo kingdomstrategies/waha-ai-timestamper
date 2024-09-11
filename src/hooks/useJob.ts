@@ -2,11 +2,11 @@ import FileSaver from 'file-saver'
 import { signInAnonymously } from 'firebase/auth'
 import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import JSZip from 'jszip'
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { stringify } from 'yaml'
 import { Separator } from '../components/SeparatorSelect'
+import mmsLanguages from '../data/mms_languages.json'
 import { fbAuth, fbDb } from '../firebase'
-import { MmsLanguage } from './useLanguage'
 
 export type JobStatus =
   | 'in_progress'
@@ -46,9 +46,6 @@ interface SessionDoc {
 
 interface Props {
   sessionId: string
-  selectedLanguage: MmsLanguage | null | undefined
-  query: string
-  setQuery: Dispatch<SetStateAction<string>>
 }
 
 export type DownloadType = 'json' | 'srt' | 'yaml'
@@ -68,12 +65,7 @@ export const downloadTypes: { type: DownloadType; description: string }[] = [
   },
 ]
 
-export default function useJob({
-  query,
-  selectedLanguage,
-  sessionId,
-  setQuery,
-}: Props) {
+export default function useJob({ sessionId }: Props) {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [jobStatus, setJobStatus] = useState<JobStatus | undefined>()
   const [timestampData, setTimestampData] = useState<FileTimestamps[]>()
@@ -88,6 +80,7 @@ export default function useJob({
   const [endTime, setEndTime] = useState<number | undefined>()
   const [separator, setSeparator] = useState<Separator | string>('lineBreak')
   const [totalLength, setTotalLength] = useState<number | undefined>()
+  const [language, setLanguage] = useState<string>()
 
   useEffect(() => {
     signInAnonymously(fbAuth).then(() => setIsSignedIn(true))
@@ -110,40 +103,18 @@ export default function useJob({
         if (data.end !== undefined) setEndTime(data.end)
         if (data.separator !== undefined) setSeparator(data.separator)
         if (data.total_length !== undefined) setTotalLength(data.total_length)
+        if (data.language !== undefined)
+          setLanguage(mmsLanguages.find((l) => l.iso === data.language)?.name)
       } else resetStatus()
     })
 
     return () => unsub()
   }, [isSignedIn, sessionId])
 
-  useEffect(() => {
-    if (query !== '') setHasSetExistingLanguage(true)
-  }, [query])
-
-  useEffect(() => {
-    if (!hasSetExistingLanguage && existingLanguage) {
-      setQuery(existingLanguage)
-      setHasSetExistingLanguage(true)
-    }
-  }, [existingLanguage, hasSetExistingLanguage, setQuery])
-
-  useEffect(() => {
-    if (!isSignedIn || !selectedLanguage) return
-
-    updateLanguage(selectedLanguage.iso)
-  }, [isSignedIn, selectedLanguage])
-
   const updateSeparator = async (separator: string) => {
     await setDoc(
       doc(fbDb, 'sessions', sessionId),
       { separator },
-      { merge: true }
-    )
-  }
-  const updateLanguage = async (language: string) => {
-    await setDoc(
-      doc(fbDb, 'sessions', sessionId),
-      { language },
       { merge: true }
     )
   }
@@ -223,5 +194,6 @@ export default function useJob({
     setSeparator,
     updateSeparator,
     totalLength,
+    language,
   }
 }

@@ -1,14 +1,11 @@
 import { useMemo } from 'react'
 import { Tooltip } from 'react-tooltip'
-import { MmsLanguage } from '../hooks/useLanguage'
 
 interface Props {
   filesToUpload: File[]
   isUploading: boolean
   matches: [string | undefined, string | undefined][]
-  selectedLanguage: MmsLanguage | null | undefined
   startJob: () => void
-  resetStatus: () => void
   sessionId: string
   separator: string
 }
@@ -17,10 +14,8 @@ export default function TimestampButton({
   filesToUpload,
   isUploading,
   matches,
-  selectedLanguage,
   sessionId,
   startJob,
-  resetStatus,
   separator,
 }: Props) {
   const errorMessage = useMemo(() => {
@@ -32,18 +27,16 @@ export default function TimestampButton({
       !matches.every(([audioFile, textFile]) => audioFile && textFile)
     ) {
       return 'Every audio file must have a matching text file (and vice versa)'
-    } else if (!selectedLanguage) {
-      return 'Please select a language.'
     } else if (separator === '') return 'Please enter a custom separator'
     else return
-  }, [filesToUpload.length, isUploading, matches, selectedLanguage, separator])
+  }, [filesToUpload.length, isUploading, matches, separator])
 
   async function handleSubmit() {
     startJob()
-    const baseUrl = 'http://34.81.60.7:8000'
-    // const baseUrl = 'http://localhost:8000'
+    // const baseUrl = 'http://34.81.60.7:8000'
+    const baseUrl = 'http://localhost:8000'
 
-    const url = `${baseUrl}/?lang=${selectedLanguage?.iso}&session-id=${sessionId}&separator=${separator}`
+    const url = `${baseUrl}/?session-id=${sessionId}&separator=${separator}`
     console.log('Fetching from', url)
     fetch(url)
   }
