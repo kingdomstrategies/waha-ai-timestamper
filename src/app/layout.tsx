@@ -16,7 +16,7 @@ export default function RootLayout({
       <body className="antialiased text-default bg-b1 flex flex-col w-full items-center h-screen">
         <div className="h-screen flex flex-col w-full items-center flex-1">
           <Header />
-          <div className="max-w-2xl w-full px-4 flex-1 flex flex-col overflow-auto">
+          <div className="max-w-3xl w-full px-4 flex-1 flex flex-col overflow-auto">
             {children}
           </div>
           <div className="w-full pb-1 pt-2 px-4 text-xs text-f2 text-center">

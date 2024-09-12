@@ -1,6 +1,6 @@
 import { Description, Field, Radio, RadioGroup } from '@headlessui/react'
 import { Dispatch, SetStateAction } from 'react'
-import { TbCheck, TbDownload } from 'react-icons/tb'
+import { TbCircleCheckFilled, TbDownload } from 'react-icons/tb'
 import { DownloadType, downloadTypes } from '../hooks/useJob'
 
 interface Props {
@@ -16,8 +16,8 @@ export default function DownloadButton({
 }: Props) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 w-full mb-8 mt-12">
-      <Field className="w-full gap-2 flex flex-col">
-        <h2 className="text-f1 text-lg font-bold mb-1">Download Format</h2>
+      <Field className="w-full flex flex-col">
+        <h2 className="form-label">Download Format</h2>
         <RadioGroup
           value={downloadType}
           onChange={setDownloadType}
@@ -28,27 +28,28 @@ export default function DownloadButton({
               key={type.type}
               value={type.type}
               className={({ checked }) =>
-                `bg-b2 flex w-full flex-row items-center gap-4 cursor-pointer rounded-lg p-4
-                shadow-sm transition hover:bg-p1/10 hover:shadow-lg
-                ${checked ? 'bg-p1/5 shadow-lg' : ''}`
+                `form flex flex-row items-center gap-2 cursor-pointer hover:bg-p1/10 border
+                hover:border-p1/10 ${checked ? 'border-p1/50' : 'border-b2'}`
               }
             >
               {({ checked }) => (
                 <>
-                  <div className="flex-1 gap-1 flex flex-col items-start">
+                  <div className="flex flex-row items-center gap-2 flex-1">
                     <p className="pill w-auto">.{type.type}</p>
                     <Description className="text-f2 text-xs">
                       {type.description}
                     </Description>
                   </div>
-                  {checked ? <TbCheck className="size-8 text-p1" /> : null}
+                  {checked ? (
+                    <TbCircleCheckFilled className="size-8 text-p1" />
+                  ) : null}
                 </>
               )}
             </Radio>
           ))}
         </RadioGroup>
       </Field>
-      <button className="btn-primary gap-4 w-full" onClick={download}>
+      <button className="btn-primary w-full" onClick={download}>
         <TbDownload className="size-4" />
         <span>Download</span>
       </button>

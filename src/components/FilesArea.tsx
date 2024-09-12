@@ -67,7 +67,6 @@ export default function FilesArea({
         .find((f) => textExtensions.some((ext) => f.name.includes(ext)))
         ?.name.split('.')
         .pop()
-      console.log('uploadedTextExt', uploadedTextExt)
       setSessionTextExt(uploadedTextExt)
     }
     if (!sessionAudioExt) {
@@ -75,7 +74,6 @@ export default function FilesArea({
         .find((f) => audioExtensions.some((ext) => f.name.includes(ext)))
         ?.name.split('.')
         .pop()
-      console.log('uploadedAudioExt', uploadedAudioExt)
       setSessionAudioExt(uploadedAudioExt)
     }
   }, [
@@ -85,13 +83,6 @@ export default function FilesArea({
     setSessionTextExt,
     uploadedFiles,
   ])
-
-  console.log(
-    'sessionTextExt',
-    sessionTextExt,
-    'sessionAudioExt',
-    sessionAudioExt
-  )
 
   async function onDragOrSelect(files: FileList | null) {
     if (!files) {

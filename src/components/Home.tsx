@@ -5,9 +5,9 @@ import { enqueueSnackbar } from 'notistack'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Sentry, Windmill } from 'react-activity'
 import 'react-activity/dist/library.css'
+import { LuPartyPopper } from 'react-icons/lu'
 import {
   TbArrowLeft,
-  TbCircleCheck,
   TbClock,
   TbCopy,
   TbExclamationCircle,
@@ -22,8 +22,11 @@ import FilesArea from '../components/FilesArea'
 import TimestampButton from '../components/TimestampButton'
 import { fbStorage } from '../firebase'
 import useJob from '../hooks/useJob'
+import useLanguage from '../hooks/useLanguage'
+import useMatches from '../hooks/useMatches'
 import useRemainingTime from '../hooks/useRemainingTime'
 import { colors } from '../styles/colors'
+import LanguageSelector from './LanguageSelector'
 import SeparatorSelect from './SeparatorSelect'
 
 export const audioExtensions = ['.wav', '.mp3']
@@ -58,6 +61,27 @@ export default function Home() {
   const [isFetchingExistingFiles, setIsFetchingExistingFiles] = useState(false)
   const [sessionTextExt, setSessionTextExt] = useState<string>()
   const [sessionAudioExt, setSessionAudioExt] = useState<string>()
+  const [hasSetExistingLanguage, setHasSetExistingLanguage] = useState(false)
+
+  const { matches, firstAudio, isFirstAudioUploaded } = useMatches({
+    filesToUpload,
+    uploadedFiles,
+  })
+
+  const {
+    languages,
+    selectedLanguage,
+    setSelectedLanguage,
+    setQuery,
+    query,
+    lidStatus,
+    setLidStatus,
+  } = useLanguage({
+    firstAudio,
+    isFirstAudioUploaded,
+    sessionId,
+    hasSetExistingLanguage,
+  })
 
   const {
     jobStatus,
@@ -79,88 +103,13 @@ export default function Home() {
     language,
   } = useJob({
     sessionId,
+    setLidStatus,
+    query,
+    selectedLanguage,
+    setQuery,
+    hasSetExistingLanguage,
+    setHasSetExistingLanguage,
   })
-
-  /**
-   * Match audio files with text files.
-   */
-  const matches = useMemo(() => {
-    console.log('matches')
-    const allFiles = [...(uploadedFiles ?? []), ...filesToUpload].filter(
-      (file, index, array) =>
-        array.findIndex((f) => f.name === file.name) === index
-    )
-
-    const audioFiles: Map<string, string> = new Map()
-    const textFiles: Map<string, string> = new Map()
-
-    // Helper function to get the file name without the extension
-    function getFileNameWithoutExtension(
-      file: string,
-      extensions: string[]
-    ): string | null {
-      for (const ext of extensions) {
-        if (file.endsWith(ext)) {
-          return file.slice(0, -ext.length)
-        }
-      }
-      return null
-    }
-
-    // Separate audio and text files into different maps
-    allFiles.forEach((file) => {
-      const audioFileName = getFileNameWithoutExtension(
-        file.name,
-        audioExtensions
-      )
-      const textFileName = getFileNameWithoutExtension(
-        file.name,
-        textExtensions
-      )
-
-      if (audioFileName) {
-        audioFiles.set(audioFileName, file.name)
-      } else if (textFileName) {
-        textFiles.set(textFileName, file.name)
-      }
-    })
-
-    const matchedFiles: Array<[string | undefined, string | undefined]> = []
-
-    // Match audio files with text files
-    audioFiles.forEach((audioFile, baseName) => {
-      if (textFiles.has(baseName)) {
-        matchedFiles.push([audioFile, textFiles.get(baseName)])
-        textFiles.delete(baseName)
-      } else {
-        matchedFiles.push([audioFile, undefined])
-      }
-    })
-
-    // Add remaining text files that have no matching audio files
-    textFiles.forEach((textFile, baseName) => {
-      matchedFiles.push([undefined, textFile])
-    })
-
-    // Sort matches alphabetically.
-    return matchedFiles.sort((a, b) => {
-      if (a[0] && b[0]) {
-        return a[0].localeCompare(b[0])
-      } else if (a[0]) {
-        return -1
-      } else if (b[0]) {
-        return 1
-      } else if (a[1] && b[1]) {
-        return a[1].localeCompare(b[1])
-      } else if (a[1]) {
-        return -1
-      } else if (b[1]) {
-        return 1
-      } else {
-        return 0
-      }
-    })
-  }, [filesToUpload, uploadedFiles])
 
   useEffect(() => {
     async function getExistingFiles() {
@@ -196,7 +145,7 @@ export default function Home() {
       case undefined:
         return <Sentry color={colors.p1} size={48} animating />
       case 'done':
-        return <TbCircleCheck className="size-12 text-p1" />
+        return <LuPartyPopper className="size-12 text-p1" />
       case 'failed':
         return <TbExclamationCircle className="size-12 text-p1" />
       default:
@@ -214,7 +163,7 @@ export default function Home() {
         if (progress === undefined || total === undefined)
           return 'Timestamping in progress...'
         else
-          return `Timestamping file ${Math.min(progress + 1, total)} of ${total}...`
+          return `Using AI to timestamp file ${Math.min(progress + 1, total)} of ${total}...`
       case 'done':
         if (!endTime || !startTime || !totalLength)
           return 'Timestamping finished.'
@@ -293,7 +242,7 @@ export default function Home() {
             Back to session
           </button>
           <button
-            className="btn w-full mb-4"
+            className="btn w-full"
             onClick={() => {
               router.replace('/')
               location.reload()
@@ -307,12 +256,6 @@ export default function Home() {
     </>
   ) : (
     <>
-      {/* <LanguageSelector
-        languages={languages}
-        selectedLanguage={selectedLanguage}
-        setQuery={setQuery}
-        query={query}
-      /> */}
       {/* <h2 className="text-sm mb-2">
         <span className="font-bold">Step 2:</span> Upload Files
       </h2> */}
@@ -373,6 +316,17 @@ export default function Home() {
           updateSeparator={updateSeparator}
         />
       ) : null}
+      {isFirstAudioUploaded ? (
+        <LanguageSelector
+          languages={languages}
+          selectedLanguage={selectedLanguage}
+          setQuery={setQuery}
+          query={query}
+          lidStatus={lidStatus}
+          setLidStatus={setLidStatus}
+          setSelectedLanguage={setSelectedLanguage}
+        />
+      ) : null}
       <TimestampButton
         filesToUpload={filesToUpload}
         isUploading={isUploading}
@@ -380,6 +334,8 @@ export default function Home() {
         sessionId={sessionId}
         startJob={startJob}
         separator={separator}
+        selectedLanguage={selectedLanguage}
+        lidStatus={lidStatus}
       />
     </>
   )

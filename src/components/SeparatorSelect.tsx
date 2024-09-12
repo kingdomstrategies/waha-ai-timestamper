@@ -43,10 +43,8 @@ export default function SeparatorSelect({
 }: Props) {
   return (
     <>
-      <Field className="w-full flex flex-col gap-2 mt-4">
-        <Label className="text-sm">
-          <span className="font-bold">Step 3:</span> Choose Timestamp Location
-        </Label>
+      <Field className="w-full flex flex-col mt-4">
+        <Label className="form-label">Timestamp Location</Label>
         {/* <Description className="text-xs">
           Select the character you want to use as a separator between
           timestamps.
@@ -59,10 +57,7 @@ export default function SeparatorSelect({
             updateSeparator(newValue)
           }}
         >
-          <ListboxButton
-            className="w-full rounded-lg bg-b2 p-2 flex justify-between items-center hover:shadow-lg
-              transition font-mono"
-          >
+          <ListboxButton className="form flex justify-between items-center">
             {separatorOptions.find((option) => option.value === separator)
               ?.label ?? 'Custom'}
             <TbChevronDown className="size-4 text-p1" />
@@ -71,7 +66,8 @@ export default function SeparatorSelect({
             transition
             anchor="bottom"
             className="w-[var(--button-width)] bg-b2 rounded-lg mt-2 flex flex-col origin-top
-              transition duration-200 ease-out data-[closed]:scale-95 data-[closed]:opacity-0"
+              transition duration-200 ease-out data-[closed]:scale-95 data-[closed]:opacity-0
+              shadow-xl"
           >
             {separatorOptions.map((option) => (
               <ListboxOption
@@ -83,7 +79,7 @@ export default function SeparatorSelect({
                 {({ selected }) => (
                   <>
                     {selected ? <TbCheck className="size-4 text-p1" /> : null}
-                    <span className="font-mono">{option.label}</span>
+                    {option.label}
                   </>
                 )}
               </ListboxOption>
@@ -101,7 +97,7 @@ export default function SeparatorSelect({
           autoCapitalize="off"
           autoComplete="off"
           spellCheck="false"
-          className={`w-full mt-2 rounded-lg bg-b2 p-2 ${separator === '' ? 'border border-p1' : ''}`}
+          className={`mt-2 form ${separator === '' ? 'border border-p1' : ''}`}
           value={separator}
           maxLength={3}
           onChange={(e) => {

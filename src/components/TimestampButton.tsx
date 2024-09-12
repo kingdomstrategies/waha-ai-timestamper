@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Tooltip } from 'react-tooltip'
+import { LidStatus, MmsLanguage } from '../hooks/useLanguage'
 
 interface Props {
   filesToUpload: File[]
@@ -8,6 +9,8 @@ interface Props {
   startJob: () => void
   sessionId: string
   separator: string
+  selectedLanguage: MmsLanguage | null | undefined
+  lidStatus: LidStatus
 }
 
 export default function TimestampButton({
@@ -17,26 +20,35 @@ export default function TimestampButton({
   sessionId,
   startJob,
   separator,
+  selectedLanguage,
+  lidStatus,
 }: Props) {
   const errorMessage = useMemo(() => {
-    if (filesToUpload.length !== 0 || isUploading) {
+    if (filesToUpload.length !== 0 || isUploading)
       return 'Please wait for uploads to finish'
-    } else if (matches.length === 0) {
-      return 'Please upload files to timestamp'
-    } else if (
-      !matches.every(([audioFile, textFile]) => audioFile && textFile)
-    ) {
+    else if (matches.length === 0) return 'Please upload files to timestamp'
+    else if (!matches.every(([audioFile, textFile]) => audioFile && textFile))
       return 'Every audio file must have a matching text file (and vice versa)'
-    } else if (separator === '') return 'Please enter a custom separator'
+    else if (!selectedLanguage) return 'Please select a language.'
+    else if (lidStatus === 'inProgress')
+      return 'Please wait for language identification to finish'
+    else if (separator === '') return 'Please enter a custom separator'
     else return
-  }, [filesToUpload.length, isUploading, matches, separator])
+  }, [
+    filesToUpload.length,
+    isUploading,
+    lidStatus,
+    matches,
+    selectedLanguage,
+    separator,
+  ])
 
   async function handleSubmit() {
     startJob()
-    const baseUrl = 'http://192.9.233.29:8000'
-    // const baseUrl = 'http://localhost:8000'
+    // const baseUrl = 'http://192.9.233.29:8000'
+    const baseUrl = 'http://localhost:8000'
 
-    const url = `${baseUrl}/?session-id=${sessionId}&separator=${separator}`
+    const url = `${baseUrl}/?lang=${selectedLanguage?.iso}&session-id=${sessionId}&separator=${separator}`
     console.log('Fetching from', url)
     fetch(url)
   }
