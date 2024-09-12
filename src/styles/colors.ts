@@ -1,13 +1,16 @@
+import tinycolor from 'tinycolor2'
+
+const p1 = '#E42535'
+const p2 = tinycolor(p1).darken(10).toString()
+const f1 = '#151515'
+const f2 = tinycolor(f1).brighten(30).toString()
+
 export const colors = {
-  p1: '#E42535',
-  p2: '#C60717',
-  p3: '#9E0000',
-  f1: '#000000',
-  f2: '#8E93A4',
-  ds: '#dddfe4',
-  bd: 'rgba(142, 147, 164, 0.15)',
+  p1,
+  p2,
+  f1,
+  f2,
   b1: '#F2F2F2',
   b2: '#FFFFFF',
-  b3: '#DDDFE4',
-  op: '#FFFFFF',
-};
+  op: '#ebebeb',
+}
