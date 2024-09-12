@@ -44,8 +44,8 @@ export default function useLanguage({
     )
       return
 
-    // const baseUrl = 'http://192.9.233.29:8000'
-    const baseUrl = 'http://localhost:8000'
+    const baseUrl = 'http://192.9.233.29:8000'
+    // const baseUrl = 'http://localhost:8000'
     const url = `${baseUrl}/lid?file-name=${firstAudio}&session-id=${sessionId}`
     setLidStatus('inProgress')
     fetch(url)
