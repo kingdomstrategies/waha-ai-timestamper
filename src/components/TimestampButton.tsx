@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { TbSparkles } from 'react-icons/tb'
 import { Tooltip } from 'react-tooltip'
 import { LidStatus, MmsLanguage } from '../hooks/useLanguage'
 
@@ -62,6 +63,7 @@ export default function TimestampButton({
         className={`btn-primary ${errorMessage !== undefined ? 'btn-disabled' : ''} w-full mt-4`}
         onClick={handleSubmit}
       >
+        <TbSparkles className="size-6" />
         {`Timestamp!`}
       </button>
       {errorMessage ? <Tooltip id="button" /> : null}
