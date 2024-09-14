@@ -31,9 +31,9 @@ export default function TimestampButton({
     else if (matches.length === 0) return 'Please upload files to timestamp'
     else if (!matches.every(([audioFile, textFile]) => audioFile && textFile))
       return 'Every audio file must have a matching text file (and vice versa)'
-    else if (!selectedLanguage) return 'Please select a language.'
     else if (lidStatus === 'inProgress')
       return 'Please wait for language identification to finish'
+    else if (!selectedLanguage) return 'Please select a language.'
     else if (separator === '') return 'Please enter a custom separator'
     else return
   }, [
