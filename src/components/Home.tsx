@@ -5,14 +5,13 @@ import { enqueueSnackbar } from 'notistack'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Sentry, Windmill } from 'react-activity'
 import 'react-activity/dist/library.css'
+import FlipNumbers from 'react-flip-numbers'
 import { LuPartyPopper } from 'react-icons/lu'
 import {
-  TbArrowLeft,
   TbClock,
   TbCopy,
   TbExclamationCircle,
   TbFile,
-  TbRefresh,
   TbZzz,
 } from 'react-icons/tb'
 import 'react-tooltip/dist/react-tooltip.css'
@@ -31,6 +30,19 @@ import SeparatorSelect from './SeparatorSelect'
 
 export const audioExtensions = ['.wav', '.mp3']
 export const textExtensions = ['.txt', '.usfm']
+
+function secondsToDhms(seconds: number) {
+  seconds = Number(seconds)
+  var d = Math.floor(seconds / (3600 * 24))
+  var h = Math.floor((seconds % (3600 * 24)) / 3600)
+  var m = Math.floor((seconds % 3600) / 60) + 1
+
+  var dDisplay = d > 0 ? d + (d == 1 ? ' day, ' : ' days, ') : ''
+  var hDisplay = h > 0 ? h + (h == 1 ? ' hr, ' : ' hrs, ') : ''
+  var mDisplay = m > 0 ? m + (m == 1 ? ' min ' : ' mins ') : ''
+  // var sDisplay = s > 0 ? s + (s == 1 ? ' second' : ' seconds') : ''
+  return dDisplay + hDisplay + mDisplay
+}
 
 export default function Home() {
   const router = useRouter()
@@ -145,6 +157,7 @@ export default function Home() {
       case undefined:
         return <Sentry color={colors.p1} size={48} animating />
       case 'done':
+        return ''
         return <LuPartyPopper className="size-12 text-p1" />
       case 'failed':
         return <TbExclamationCircle className="size-12 text-p1" />
@@ -164,17 +177,12 @@ export default function Home() {
           return 'Timestamping in progress...'
         else
           return `Using AI to timestamp file ${Math.min(progress + 1, total)} of ${total}...`
-      case 'done':
-        if (!endTime || !startTime || !totalLength)
-          return 'Timestamping finished.'
-        else
-          return `Timestamping finished in ${new Date((endTime - startTime) * 1000).toISOString().substring(11, 19)}, and you saved ${new Date(totalLength * 1000 * 1.2).toISOString().substring(11, 19)} of time!`
       case 'failed':
         return 'Timestamping failed.'
       default:
         return null
     }
-  }, [endTime, jobStatus, progress, startTime, total, totalLength])
+  }, [jobStatus, progress, total])
 
   // Usage in Home component
   const { remainingTime, sizeOfUploaded } = useRemainingTime(
@@ -183,12 +191,75 @@ export default function Home() {
     uploadedFiles
   )
 
+  const [hrs, setHrs] = useState('99')
+  const [mins, setMins] = useState('99')
+  useEffect(() => {
+    if (totalLength) {
+      setHrs(new Date(totalLength * 1.5 * 1000).toISOString().substring(11, 13))
+      setMins(
+        new Date(totalLength * 1.5 * 1000).toISOString().substring(14, 16)
+      )
+    }
+  }, [totalLength])
+
   return jobStatus !== 'not_started' ? (
     <>
       <div className="content w-full flex flex-col items-center justify-center flex-1">
-        <div className="flex flex-col items-center justify-center gap-4 mb-2">
+        <div className="flex flex-col items-center justify-center gap-4 mb-2 w-full">
           {icon}
-          <p className="text-f1 font-bold text-xl text-center">{statusText}</p>
+          {/* {endTime !== undefined && startTime !== undefined ? (
+            <p className="text-sm text-f2">
+              Timestamping finished in{' '}
+              {new Date((endTime - startTime) * 1000)
+                .toISOString()
+                .substring(11, 19)}
+              .
+            </p>
+          ) : null} */}
+          {totalLength !== undefined ? (
+            <div className="flex flex-row gap-4 items-center justify-center mb-8 mt-8">
+              {/* <LuPartyPopper className="size-12 text-p1" /> */}
+              <div className="flex flex-col gap-2 items-center justify-center">
+                <div className="flex flex-row items-center">
+                  <FlipNumbers
+                    height={50}
+                    width={60}
+                    numberClassName="font-bold rounded-lg mr-1"
+                    color={colors.f1}
+                    background={colors.b2}
+                    duration={2}
+                    play
+                    perspective={100}
+                    numbers={hrs}
+                  />
+                  <p className="mr-3 text-f2">hrs</p>
+                  <FlipNumbers
+                    height={50}
+                    width={60}
+                    numberClassName="text-2xl font-bold rounded-lg mr-1"
+                    color={colors.f1}
+                    background={colors.b2}
+                    duration={2}
+                    play
+                    perspective={100}
+                    numbers={mins}
+                  />
+                  <p className="text-f2">mins</p>
+                </div>
+                {/* <h2 className="text-2xl font-bold">
+                {secondsToDhms(totalLength * 1.5)}
+              </h2> */}
+                <p className="text-f2 text-xs">
+                  Time saved over timestamping manually
+                </p>
+              </div>
+            </div>
+          ) : null}
+          {statusText ? (
+            <p className="text-f1 font-bold text-xl text-center">
+              {statusText}
+            </p>
+          ) : null}
           {jobStatus === 'in_progress' && current ? (
             <div className="pill font-mono">{current}</div>
           ) : null}
@@ -237,11 +308,11 @@ export default function Home() {
       </div>
       {jobStatus === 'done' || jobStatus === 'failed' ? (
         <>
-          <button className="btn w-full mt-4 mb-2" onClick={resetStatus}>
+          {/* <button className="btn w-full mt-4 mb-2" onClick={resetStatus}>
             <TbArrowLeft className="size-4" />
             Back to session
-          </button>
-          <button
+          </button> */}
+          {/* <button
             className="btn w-full"
             onClick={() => {
               router.replace('/')
@@ -250,7 +321,7 @@ export default function Home() {
           >
             <TbRefresh className="size-4" />
             Start over
-          </button>
+          </button> */}
         </>
       ) : null}
     </>
@@ -259,7 +330,9 @@ export default function Home() {
       {/* <h2 className="text-sm mb-2">
         <span className="font-bold">Step 2:</span> Upload Files
       </h2> */}
-      {remainingTime !== undefined && uploadSize !== undefined ? (
+      {matches.length > 2 &&
+      remainingTime !== undefined &&
+      uploadSize !== undefined ? (
         <div
           className="flex flex-row items-center justify-center w-full bg-p1/10 rounded-xl p-4 mb-4
             text-xs"

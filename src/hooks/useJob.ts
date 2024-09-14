@@ -60,15 +60,11 @@ export type DownloadType = 'json' | 'srt' | 'yaml'
 export const downloadTypes: { type: DownloadType; description: string }[] = [
   {
     type: 'json',
-    description: 'Standard and developer friendly-format for web apps.',
+    description: 'Standard for web apps.',
   },
   {
     type: 'srt',
-    description: 'Standard format for video subtitles.',
-  },
-  {
-    type: 'yaml',
-    description: 'Another developer-friendly alternative to json.',
+    description: 'Standard for video subtitles.',
   },
 ]
 

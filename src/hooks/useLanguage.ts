@@ -1,5 +1,6 @@
 import { enqueueSnackbar } from 'notistack'
 import { useEffect, useState } from 'react'
+import { baseUrl } from '../../constants'
 import mmsLanguages from '../data/mms_languages.json'
 
 export interface MmsLanguage {
@@ -43,8 +44,6 @@ export default function useLanguage({
     )
       return
 
-    const baseUrl = 'https://api.timestampaudio.com:443'
-    // const baseUrl = 'http://localhost:8000'
     const url = `${baseUrl}/lid?file-name=${firstAudio}&session-id=${sessionId}`
     setLidStatus('inProgress')
     fetch(url)

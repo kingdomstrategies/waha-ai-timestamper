@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { TbSparkles } from 'react-icons/tb'
 import { Tooltip } from 'react-tooltip'
+import { baseUrl } from '../../constants'
 import { LidStatus, MmsLanguage } from '../hooks/useLanguage'
 
 interface Props {
@@ -46,8 +47,6 @@ export default function TimestampButton({
 
   async function handleSubmit() {
     startJob()
-    const baseUrl = 'https://api.timestampaudio.com:443'
-    // const baseUrl = 'http://localhost:8000'
 
     const url = `${baseUrl}/?lang=${selectedLanguage?.iso}&session-id=${sessionId}&separator=${separator}`
     console.log('Fetching from', url)
