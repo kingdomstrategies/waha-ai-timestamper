@@ -46,7 +46,7 @@ export default function TimestampButton({
 
   async function handleSubmit() {
     startJob()
-    const baseUrl = 'http://192.9.233.29:8000'
+    const baseUrl = 'https://api.timestampaudio.com:443'
     // const baseUrl = 'http://localhost:8000'
 
     const url = `${baseUrl}/?lang=${selectedLanguage?.iso}&session-id=${sessionId}&separator=${separator}`
