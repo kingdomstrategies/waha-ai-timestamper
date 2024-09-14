@@ -160,7 +160,21 @@ export default function useJob({
 
     let file
     if (downloadType === 'json') {
-      const json = JSON.stringify(timestampData)
+      const json = JSON.stringify(
+        // Map to order keys.
+        timestampData.map((file) => ({
+          audio_file: file.audio_file,
+          text_file: file.text_file,
+          sections: file.sections.map((section) => ({
+            begin: section.begin,
+            begin_str: section.begin_str,
+            end: section.end,
+            end_str: section.end_str,
+            text: section.text,
+            uroman_tokens: section.uroman_tokens,
+          })),
+        }))
+      )
       file = new Blob([json], { type: 'application/json' })
     }
     // else if (format === 'txt') file = new Blob([json], { type: 'text/plain' })
