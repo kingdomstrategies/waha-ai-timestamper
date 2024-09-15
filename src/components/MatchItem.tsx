@@ -1,12 +1,7 @@
 import { deleteObject, ref } from 'firebase/storage'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { Windmill } from 'react-activity'
-import {
-  TbArrowsLeftRight,
-  TbCheck,
-  TbExclamationCircle,
-  TbTrash,
-} from 'react-icons/tb'
+import { TbCheck, TbExclamationCircle, TbTrash } from 'react-icons/tb'
 import { fbStorage } from '../firebase'
 import { colors } from '../styles/colors'
 
@@ -54,8 +49,8 @@ export default function MatchItem({
   return (
     <div
       key={audioFile}
-      className="w-full flex flex-col sm:flex-row gap-1 sm:gap-4 items-center p-2 rounded-xl
-        sm:p-0 bg-p1/10 sm:bg-p1/0"
+      className="w-full flex flex-col sm:flex-row gap-1 sm:gap-2 items-center p-2 rounded-xl
+        bg-p1/10"
     >
       <div
         className={`w-full flex-1 flex flex-row items-center card px-4 py-4 gap-2
@@ -90,7 +85,7 @@ export default function MatchItem({
           </button>
         ) : null}
       </div>
-      <TbArrowsLeftRight className="text-f1 h-0 invisible sm:visible sm:h-auto" />
+      {/* <MdOutlineLink className="text-f1 h-0 invisible sm:visible sm:h-auto size-6" /> */}
       <div
         className={`w-full flex-1 flex flex-row items-center card px-4 py-4 gap-2
           ${!textFile ? 'bg-p1/10' : ''}`}

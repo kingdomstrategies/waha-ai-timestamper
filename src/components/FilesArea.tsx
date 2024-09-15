@@ -1,10 +1,12 @@
 'use client'
-import { ref, uploadBytes } from 'firebase/storage'
+import FileSaver from 'file-saver'
+import { getBlob, ref, uploadBytes } from 'firebase/storage'
+import JSZip from 'jszip'
 import { enqueueSnackbar } from 'notistack'
-import { Dispatch, SetStateAction, useEffect } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Windmill } from 'react-activity'
 import 'react-activity/dist/library.css'
-import { TbUpload } from 'react-icons/tb'
+import { TbDownload, TbUpload } from 'react-icons/tb'
 import { fbStorage } from '../firebase'
 import { colors } from '../styles/colors'
 import { audioExtensions, textExtensions } from './Home'
@@ -55,6 +57,8 @@ export default function FilesArea({
   setSessionAudioExt,
   setSessionTextExt,
 }: Props) {
+  const [isDownloading, setIsDownloading] = useState(false)
+
   useEffect(() => {
     if (!uploadedFiles) {
       // setSessionTextExt(undefined)
@@ -190,6 +194,7 @@ export default function FilesArea({
         console.error('Error uploading file: ', error)
       }
     }
+    enqueueSnackbar('Files uploaded successfully.', { variant: 'success' })
     setFilesToUpload([])
     setUploadSize(undefined)
     setIsUploading(false)
@@ -207,7 +212,7 @@ export default function FilesArea({
   ) : (
     <div
       className={`${dragActive ? 'bg-p1/10' : ''} transition flex flex-col w-full flex-1 px-4
-        border-dashed border border-p1/40 rounded-xl overflow-y-auto gap-8 min-h-0`}
+        border-dashed border border-p1/40 rounded-xl overflow-y-auto gap-2 min-h-0`}
       onDragEnter={(e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -231,7 +236,13 @@ export default function FilesArea({
         setDragActive(true)
       }}
     >
-      <div className="flex flex-col gap-2 w-full mt-4">
+      {matches.length > 0 ? (
+        <div className="w-full flex sm:mt-4 invisible sm:visible">
+          <p className="flex-1 text-center text-sm text-f2">Audio</p>
+          <p className="flex-1 text-center text-sm text-f2">Text</p>
+        </div>
+      ) : null}
+      <div className="flex flex-col gap-2 w-full">
         {matches.map((match) => (
           <MatchItem
             key={match[0]}
@@ -255,10 +266,10 @@ export default function FilesArea({
         }}
         accept={audioExtensions.concat(textExtensions).join(',')}
       />
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 mb-8">
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 mb-8 mt-4">
         <TbUpload className="size-8 text-p1" />
         <div className="flex flex-col w-full items-center">
-          <p className="text-center">
+          <p className="text-center text-xl font-bold">
             Drag and drop audio and text files you want to align here
           </p>
 
@@ -279,8 +290,8 @@ export default function FilesArea({
             </p>
           ))}
         </div>
-        <div className="p-4 text-xs text-f2 bg-f2/10 rounded-lg flex flex-col w-full gap-1">
-          Audio and their corresponding text files should have the same name but
+        <div className="p-4 text-xs text-center text-f2 bg-f2/10 rounded-lg flex flex-col w-full gap-1">
+          Audio and its corresponding text files should have the same name but
           different extensions
           <p>
             For example, you can upload{' '}
@@ -290,6 +301,34 @@ export default function FilesArea({
             .
           </p>
         </div>
+        <button
+          className="btn mt-4"
+          disabled={isDownloading}
+          onClick={async () => {
+            const testFile1Ref = ref(fbStorage, `test_files/SWA_JHN_001.mp3`)
+            const testFile2Ref = ref(fbStorage, `test_files/SWA_JHN_001.txt`)
+            setIsDownloading(true)
+            const testFile1Blob = await getBlob(testFile1Ref)
+            const testFile2Blob = await getBlob(testFile2Ref)
+            const zip = new JSZip()
+            zip.file('SWA_JHN_001.mp3', testFile1Blob)
+            zip.file('SWA_JHN_001.txt', testFile2Blob)
+            zip.generateAsync({ type: 'blob' }).then((content) => {
+              FileSaver.saveAs(
+                content,
+                `timestamp_audio_hackathon_sample_files.zip`
+              )
+            })
+            // download(testFile1Url, 'SWA_JHN_001.mp3')
+            // download(testFile2Url, 'SWA_JHN_001.txt')
+            // FileSaver.saveAs(testFile2Blob, 'SWA_JHN_001.txt')
+            setIsDownloading(false)
+          }}
+        >
+          {isDownloading ? <Windmill size={12} color={colors.p1} /> : null}
+          Download sample files
+          <TbDownload className="size-4 text-p1" />
+        </button>
       </div>
     </div>
   )

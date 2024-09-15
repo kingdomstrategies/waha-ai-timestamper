@@ -31,19 +31,6 @@ import SeparatorSelect from './SeparatorSelect'
 export const audioExtensions = ['.wav', '.mp3']
 export const textExtensions = ['.txt', '.usfm']
 
-function secondsToDhms(seconds: number) {
-  seconds = Number(seconds)
-  var d = Math.floor(seconds / (3600 * 24))
-  var h = Math.floor((seconds % (3600 * 24)) / 3600)
-  var m = Math.floor((seconds % 3600) / 60) + 1
-
-  var dDisplay = d > 0 ? d + (d == 1 ? ' day, ' : ' days, ') : ''
-  var hDisplay = h > 0 ? h + (h == 1 ? ' hr, ' : ' hrs, ') : ''
-  var mDisplay = m > 0 ? m + (m == 1 ? ' min ' : ' mins ') : ''
-  // var sDisplay = s > 0 ? s + (s == 1 ? ' second' : ' seconds') : ''
-  return dDisplay + hDisplay + mDisplay
-}
-
 export default function Home() {
   const router = useRouter()
   const params = useSearchParams()
@@ -56,11 +43,11 @@ export default function Home() {
     const existingSessionId = params.get('sessionId')
 
     if (existingSessionId && sessionId === '') {
-      router.push(`/?sessionId=${existingSessionId}`)
+      router.push(`/timestamp?sessionId=${existingSessionId}`)
       setSessionId(existingSessionId)
     } else if (sessionId === '') {
       const newSessionId = uuidv4()
-      router.push(`/?sessionId=${newSessionId}`)
+      router.push(`/timestamp?sessionId=${newSessionId}`)
       setSessionId(newSessionId)
     }
   }, [params, router, sessionId])
@@ -98,7 +85,6 @@ export default function Home() {
   const {
     jobStatus,
     downloadTimestamps,
-    resetStatus,
     startJob,
     downloadType,
     setDownloadType,
@@ -106,8 +92,6 @@ export default function Home() {
     error,
     progress,
     total,
-    endTime,
-    startTime,
     separator,
     setSeparator,
     updateSeparator,
@@ -204,7 +188,7 @@ export default function Home() {
 
   return jobStatus !== 'not_started' ? (
     <>
-      <div className="content w-full flex flex-col items-center justify-center flex-1">
+      <div className="content w-full flex flex-col items-center justify-center flex-1 max-w-3xl px-4">
         <div className="flex flex-col items-center justify-center gap-4 mb-2 w-full">
           {icon}
           {/* {endTime !== undefined && startTime !== undefined ? (
@@ -326,10 +310,21 @@ export default function Home() {
       ) : null}
     </>
   ) : (
-    <>
+    <div className="flex flex-col w-full max-w-3xl px-4 items-center justify-center flex-1 pt-4">
       {/* <h2 className="text-sm mb-2">
         <span className="font-bold">Step 2:</span> Upload Files
       </h2> */}
+      {/* <div className="w-full flex flex-col rounded-lg bg-p1/10 mb-4 p-2">
+        <h2 className="text-p1 font-bold text-sm mb-2 text-center">
+          Save 100+ Hours with Automated Timestamp Data for Your Audio Files
+        </h2>
+        <p className="text-xs text-center">
+          Generate precise timestamps in over{' '}
+          <span className="font-bold">1,100 languages</span>—turning months of
+          manual work into minutes and simplifying your audio workflow for Bible
+          studies, podcasts, and media.
+        </p>
+      </div> */}
       {matches.length > 2 &&
       remainingTime !== undefined &&
       uploadSize !== undefined ? (
@@ -382,34 +377,36 @@ export default function Home() {
         setSessionAudioExt={setSessionAudioExt}
         setSessionTextExt={setSessionTextExt}
       />
-      {sessionTextExt === 'txt' ? (
-        <SeparatorSelect
+      <div className="flex flex-col w-full sticky bottom-0 bg-b1 border-t border-p1/10">
+        {sessionTextExt === 'txt' ? (
+          <SeparatorSelect
+            separator={separator}
+            setSeparator={setSeparator}
+            updateSeparator={updateSeparator}
+          />
+        ) : null}
+        {isFirstAudioUploaded ? (
+          <LanguageSelector
+            languages={languages}
+            selectedLanguage={selectedLanguage}
+            setQuery={setQuery}
+            query={query}
+            lidStatus={lidStatus}
+            setLidStatus={setLidStatus}
+            setSelectedLanguage={setSelectedLanguage}
+          />
+        ) : null}
+        <TimestampButton
+          filesToUpload={filesToUpload}
+          isUploading={isUploading}
+          matches={matches}
+          sessionId={sessionId}
+          startJob={startJob}
           separator={separator}
-          setSeparator={setSeparator}
-          updateSeparator={updateSeparator}
-        />
-      ) : null}
-      {isFirstAudioUploaded ? (
-        <LanguageSelector
-          languages={languages}
           selectedLanguage={selectedLanguage}
-          setQuery={setQuery}
-          query={query}
           lidStatus={lidStatus}
-          setLidStatus={setLidStatus}
-          setSelectedLanguage={setSelectedLanguage}
         />
-      ) : null}
-      <TimestampButton
-        filesToUpload={filesToUpload}
-        isUploading={isUploading}
-        matches={matches}
-        sessionId={sessionId}
-        startJob={startJob}
-        separator={separator}
-        selectedLanguage={selectedLanguage}
-        lidStatus={lidStatus}
-      />
-    </>
+      </div>
+    </div>
   )
 }

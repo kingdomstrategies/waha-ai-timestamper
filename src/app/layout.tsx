@@ -13,18 +13,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased text-default bg-b1 flex flex-col w-full items-center h-screen">
-        <div className="h-screen flex flex-col w-full items-center flex-1">
+      <body
+        className="antialiased text-default bg-b1 flex flex-col w-full items-center scroll-smooth
+          min-h-fit h-screen"
+      >
+        <div className="flex flex-col w-full items-center flex-1">
           <Header />
-          <div className="max-w-3xl w-full px-4 flex-1 flex flex-col overflow-auto">
+          <div className="w-full flex-1 flex flex-col items-center">
             {children}
-          </div>
-          <div className="w-full pb-1 pt-2 px-4 text-xs text-f2 text-center">
-            Made with ❤️ by the{' '}
-            <a href="https://waha.app" className="underline">
-              Waha
-            </a>{' '}
-            team. © 2024
+            {/* <div className="w-full pb-1 pt-2 px-4 text-xs text-f2 text-center">
+              Made with ❤️ by the{' '}
+              <a href="https://waha.app" className="underline">
+                Waha
+              </a>{' '}
+              team. © 2024
+            </div> */}
           </div>
         </div>
       </body>
