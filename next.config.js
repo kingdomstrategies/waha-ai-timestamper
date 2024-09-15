@@ -1,5 +1,6 @@
 module.exports = {
   images: {
+    domains: ['timestampaudio.com'],
     remotePatterns: [
       {
         protocol: 'https',
