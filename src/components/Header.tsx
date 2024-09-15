@@ -1,15 +1,9 @@
 'use client'
-import FileSaver from 'file-saver'
-import { getBlob, ref } from 'firebase/storage'
-import JSZip from 'jszip'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { SnackbarProvider } from 'notistack'
 import { useState } from 'react'
-import { Windmill } from 'react-activity'
-import { TbArrowRight, TbDownload } from 'react-icons/tb'
-import { fbStorage } from '../firebase'
-import { colors } from '../styles/colors'
+import { TbArrowRight } from 'react-icons/tb'
 import GithubDropdown from './GithubDropdown'
 import HelpModal from './HelpModal'
 
@@ -24,7 +18,6 @@ export default function Header() {
   const [showModal, setShowModal] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const [isDownloading, setIsDownloading] = useState(false)
 
   return (
     <div
@@ -189,39 +182,7 @@ export default function Header() {
               Try it out
               <TbArrowRight className="size-6" />
             </Link>
-          ) : (
-            <button
-              className="btn py-2 px-4 text-sm"
-              disabled={isDownloading}
-              onClick={async () => {
-                const testFile1Ref = ref(
-                  fbStorage,
-                  `test_files/SWA_JHN_001.mp3`
-                )
-                const testFile2Ref = ref(
-                  fbStorage,
-                  `test_files/SWA_JHN_001.txt`
-                )
-                setIsDownloading(true)
-                const testFile1Blob = await getBlob(testFile1Ref)
-                const testFile2Blob = await getBlob(testFile2Ref)
-                const zip = new JSZip()
-                zip.file('SWA_JHN_001.mp3', testFile1Blob)
-                zip.file('SWA_JHN_001.txt', testFile2Blob)
-                zip.generateAsync({ type: 'blob' }).then((content) => {
-                  FileSaver.saveAs(content, `test_files.zip`)
-                })
-                // download(testFile1Url, 'SWA_JHN_001.mp3')
-                // download(testFile2Url, 'SWA_JHN_001.txt')
-                // FileSaver.saveAs(testFile2Blob, 'SWA_JHN_001.txt')
-                setIsDownloading(false)
-              }}
-            >
-              {isDownloading ? <Windmill size={12} color={colors.p1} /> : null}
-              Download test files
-              <TbDownload className="size-4 text-p1" />
-            </button>
-          )}
+          ) : null}
           {/* <button
             className="btn px-3 text-sm"
             onClick={() => setShowModal(true)}

@@ -1,10 +1,12 @@
 'use client'
-import { ref, uploadBytes } from 'firebase/storage'
+import FileSaver from 'file-saver'
+import { getBlob, ref, uploadBytes } from 'firebase/storage'
+import JSZip from 'jszip'
 import { enqueueSnackbar } from 'notistack'
-import { Dispatch, SetStateAction, useEffect } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Windmill } from 'react-activity'
 import 'react-activity/dist/library.css'
-import { TbUpload } from 'react-icons/tb'
+import { TbDownload, TbUpload } from 'react-icons/tb'
 import { fbStorage } from '../firebase'
 import { colors } from '../styles/colors'
 import { audioExtensions, textExtensions } from './Home'
@@ -55,6 +57,8 @@ export default function FilesArea({
   setSessionAudioExt,
   setSessionTextExt,
 }: Props) {
+  const [isDownloading, setIsDownloading] = useState(false)
+
   useEffect(() => {
     if (!uploadedFiles) {
       // setSessionTextExt(undefined)
@@ -297,6 +301,34 @@ export default function FilesArea({
             .
           </p>
         </div>
+        <button
+          className="btn mt-4"
+          disabled={isDownloading}
+          onClick={async () => {
+            const testFile1Ref = ref(fbStorage, `test_files/SWA_JHN_001.mp3`)
+            const testFile2Ref = ref(fbStorage, `test_files/SWA_JHN_001.txt`)
+            setIsDownloading(true)
+            const testFile1Blob = await getBlob(testFile1Ref)
+            const testFile2Blob = await getBlob(testFile2Ref)
+            const zip = new JSZip()
+            zip.file('SWA_JHN_001.mp3', testFile1Blob)
+            zip.file('SWA_JHN_001.txt', testFile2Blob)
+            zip.generateAsync({ type: 'blob' }).then((content) => {
+              FileSaver.saveAs(
+                content,
+                `timestamp_audio_hackathon_sample_files.zip`
+              )
+            })
+            // download(testFile1Url, 'SWA_JHN_001.mp3')
+            // download(testFile2Url, 'SWA_JHN_001.txt')
+            // FileSaver.saveAs(testFile2Blob, 'SWA_JHN_001.txt')
+            setIsDownloading(false)
+          }}
+        >
+          {isDownloading ? <Windmill size={12} color={colors.p1} /> : null}
+          Download sample files
+          <TbDownload className="size-4 text-p1" />
+        </button>
       </div>
     </div>
   )
