@@ -1,3 +1,13 @@
+# TimestampAudio.com - Front End
+
+
+The [TimeStampAudio.com](https://timestampaudio.com) web app generates timing data from any audio and corresponding text file, in the over [1,100 languages](https://dl.fbaipublicfiles.com/mms/misc/language_coverage_mms.html) supported by [Meta's MMS ASR model](https://ai.meta.com/blog/multilingual-model-speech-recognition/), outputting the results in JSON and SRT.
+
+
+
+
+
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
