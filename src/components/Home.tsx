@@ -8,10 +8,12 @@ import 'react-activity/dist/library.css'
 import FlipNumbers from 'react-flip-numbers'
 import { LuPartyPopper } from 'react-icons/lu'
 import {
+  TbArrowLeft,
   TbClock,
   TbCopy,
   TbExclamationCircle,
   TbFile,
+  TbRefresh,
   TbZzz,
 } from 'react-icons/tb'
 import 'react-tooltip/dist/react-tooltip.css'
@@ -97,6 +99,7 @@ export default function Home() {
     updateSeparator,
     totalLength,
     language,
+    resetStatus,
   } = useJob({
     sessionId,
     setLidStatus,
@@ -290,13 +293,13 @@ export default function Home() {
           </div>
         ) : null}
       </div>
-      {jobStatus === 'done' || jobStatus === 'failed' ? (
+      {jobStatus === 'failed' ? (
         <>
-          {/* <button className="btn w-full mt-4 mb-2" onClick={resetStatus}>
+          <button className="btn w-full mt-4 mb-2" onClick={resetStatus}>
             <TbArrowLeft className="size-4" />
             Back to session
-          </button> */}
-          {/* <button
+          </button>
+          <button
             className="btn w-full"
             onClick={() => {
               router.replace('/')
@@ -305,7 +308,7 @@ export default function Home() {
           >
             <TbRefresh className="size-4" />
             Start over
-          </button> */}
+          </button>
         </>
       ) : null}
     </>

@@ -257,6 +257,7 @@ export default function useJob({
     setSeparator,
     updateSeparator,
     totalLength,
+    resetStatus,
     language,
     hasSetExistingLanguage,
   }
