@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import 'react-activity/dist/library.css'
 import { TbArrowRight } from 'react-icons/tb'
 import 'react-tooltip/dist/react-tooltip.css'
+import Footer from '../components/Footer'
 import HowItWorks from '../components/HowItWorks'
 import UseCases from '../components/UseCases'
 
@@ -11,8 +12,8 @@ export default function Page() {
   return (
     <Suspense>
       <div
-        className="flex flex-col w-full items-center justify-center bg-[url('../assets/bg.jpg')]
-          bg-no-repeat bg-f1 bg-opacity-80 bg-blend-darken h-svh"
+        className="flex flex-col w-full items-center justify-center bg-[url('../assets/bg.png')]
+          bg-no-repeat bg-cover bg-f1 bg-opacity-80 bg-blend-darken h-svh"
       >
         <div className="flex flex-col items-center gap-4 max-w-4xl px-4">
           <h1 className="text-4xl font-bold text-center text-op">
@@ -40,16 +41,13 @@ export default function Page() {
           </h1>
           <h3 className="text-2xl text-center mb-8 text-op"></h3>
           <HowItWorks />
-          <Link href="/timestamp" className="btn">
+          <Link id="use-cases" href="/timestamp" className="btn">
             Try it out
             <TbArrowRight />
           </Link>
         </div>
       </div>
-      <div
-        id="use-cases"
-        className="flex flex-col items-center w-full bg-p1 justify-center py-12"
-      >
+      <div className="flex flex-col items-center w-full bg-p1 justify-center py-12">
         <div className="flex flex-col items-center gap-4 max-w-4xl px-4">
           <h1 className="text-4xl font-bold text-center mb-2 text-op">
             What can you do with timestamp data?
@@ -62,6 +60,7 @@ export default function Page() {
           </Link>
         </div>
       </div>
+      <Footer />
     </Suspense>
   )
 }

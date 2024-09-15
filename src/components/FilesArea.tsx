@@ -234,8 +234,8 @@ export default function FilesArea({
     >
       {matches.length > 0 ? (
         <div className="w-full flex sm:mt-4 invisible sm:visible">
-          <p className="flex-1 text-center font-bold">Audio</p>
-          <p className="flex-1 text-center font-bold">Text</p>
+          <p className="flex-1 text-center text-sm text-f2">Audio</p>
+          <p className="flex-1 text-center text-sm text-f2">Text</p>
         </div>
       ) : null}
       <div className="flex flex-col gap-2 w-full">
@@ -262,7 +262,7 @@ export default function FilesArea({
         }}
         accept={audioExtensions.concat(textExtensions).join(',')}
       />
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 mb-8">
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 mb-8 mt-4">
         <TbUpload className="size-8 text-p1" />
         <div className="flex flex-col w-full items-center">
           <p className="text-center text-xl font-bold">

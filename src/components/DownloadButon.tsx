@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction } from 'react'
 import { TbCircleCheckFilled, TbDownload } from 'react-icons/tb'
 import 'react-multi-carousel/lib/styles.css'
 import { DownloadType, downloadTypes } from '../hooks/useJob'
+import Footer from './Footer'
 import UseCases from './UseCases'
 
 interface Props {
@@ -18,7 +19,7 @@ export default function DownloadButton({
 }: Props) {
   return (
     <div className="flex flex-col items-center gap-4 w-full flex-1">
-      <div className="flex-1 w-full flex flex-col gap-4">
+      <div className="flex-1 w-full flex flex-col gap-4 mb-8">
         <Field className="w-full flex flex-col">
           <RadioGroup
             value={downloadType}
@@ -56,7 +57,11 @@ export default function DownloadButton({
           <span>Download {downloadType}</span>
         </button>
       </div>
+      <h1 className="text-xl font-bold mb-2 w-full text-center">
+        What can you do with timestamp data?
+      </h1>
       <UseCases />
+      <Footer />
     </div>
   )
 }

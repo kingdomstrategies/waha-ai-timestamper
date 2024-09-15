@@ -231,7 +231,6 @@ export default function useJob({
   return {
     jobStatus,
     downloadTimestamps,
-    resetStatus,
     startJob,
     downloadType,
     setDownloadType,
@@ -239,8 +238,6 @@ export default function useJob({
     progress,
     current,
     error,
-    startTime,
-    endTime,
     separator,
     setSeparator,
     updateSeparator,

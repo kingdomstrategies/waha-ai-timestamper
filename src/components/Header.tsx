@@ -13,7 +13,10 @@ export default function Header() {
   const pathname = usePathname()
 
   return (
-    <header className="w-full flex py-2 justify-center items-center px-4 bg-b2 shadow-md">
+    <div
+      className="w-full flex py-1 justify-center items-center px-4 bg-b2 shadow-md sticky top-0
+        z-10"
+    >
       <div className="max-w-4xl flex flex-row w-full gap-2 items-center justify-center relative">
         {/* <svg
           width={24}
@@ -41,7 +44,7 @@ export default function Header() {
           }}
         >
           <svg
-            width={130}
+            width={120}
             viewBox="0 0 756 272"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -168,7 +171,7 @@ export default function Header() {
         <div className="sm:absolute sm:right-4 flex flex-row gap-2">
           <GithubDropdown />
           {pathname === '/' ? (
-            <Link href="/timestamp" className="btn btn-primary">
+            <Link href="/timestamp" className="btn btn-primary py-2 px-4">
               Try it out
               <TbArrowRight className="size-6" />
             </Link>
@@ -183,6 +186,6 @@ export default function Header() {
       </div>
       <HelpModal open={showModal} setOpen={setShowModal} />
       <SnackbarProvider autoHideDuration={3000} />
-    </header>
+    </div>
   )
 }

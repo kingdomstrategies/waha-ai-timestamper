@@ -6,7 +6,7 @@ export default function GithubDropdown() {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
-        <MenuButton className="btn">
+        <MenuButton className="btn py-2 px-4">
           Github
           <TbBrandGithub className="size-6 text-p1 h-full" />
         </MenuButton>

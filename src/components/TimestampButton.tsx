@@ -3,6 +3,7 @@ import { TbSparkles } from 'react-icons/tb'
 import { Tooltip } from 'react-tooltip'
 import { baseUrl } from '../../constants'
 import { LidStatus, MmsLanguage } from '../hooks/useLanguage'
+import Footer from './Footer'
 
 interface Props {
   filesToUpload: File[]
@@ -66,6 +67,7 @@ export default function TimestampButton({
         {`Timestamp!`}
       </button>
       {errorMessage ? <Tooltip id="button" /> : null}
+      <Footer />
     </>
   )
 }
