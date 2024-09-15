@@ -33,7 +33,10 @@ export default function HowItWorks() {
           <TbCircleNumber4 className="size-8 text-p1 mb-2" />,
         ],
       ].map(([title, description, icon], index) => (
-        <div key="title" className="card bg-b2 px-6 py-6 overflow-hidden mb-2">
+        <div
+          key={title as string}
+          className="card bg-b2 px-6 py-6 overflow-hidden mb-2"
+        >
           {icon}
           <h2 className="font-bold text-xl mb-2">{title}</h2>
           <p className="text-f2">{description}</p>

@@ -38,7 +38,7 @@ export default function UseCases() {
           ],
         ].map(([title, description, image]) => (
           <div
-            key="title"
+            key={title}
             className="grid card bg-b2 py-0 px-0 overflow-hidden"
           >
             <Image
