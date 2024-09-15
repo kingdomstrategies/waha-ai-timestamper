@@ -29,7 +29,7 @@ export default function Page() {
             Learn more
             <TbArrowRight />
           </Link>
-          <p className="text-op text-sm">
+          <p className="text-op text-sm text-center">
             200,000+ files timestamped saving 19,000+ hours
           </p>
         </div>
