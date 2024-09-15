@@ -55,6 +55,21 @@ interface Props {
   setLidStatus: Dispatch<SetStateAction<LidStatus>>
 }
 
+function formatDateToSRTTime(date: Date): string {
+  const pad = (num: number, size: number): string => {
+    let s = num.toString()
+    while (s.length < size) s = '0' + s
+    return s
+  }
+
+  const hours = pad(date.getUTCHours(), 2)
+  const minutes = pad(date.getUTCMinutes(), 2)
+  const seconds = pad(date.getUTCSeconds(), 2)
+  const milliseconds = pad(date.getUTCMilliseconds(), 3)
+
+  return `${hours}:${minutes}:${seconds},${milliseconds}`
+}
+
 export type DownloadType = 'json' | 'srt' | 'yaml'
 
 export const downloadTypes: { type: DownloadType; description: string }[] = [
@@ -140,15 +155,15 @@ export default function useJob({
           const sectionNumber = index
           const srtStartTime = new Date(section.begin * 1000)
           const srtEndTime = new Date(section.end * 1000)
-          const srtStartString = `${srtStartTime.getUTCHours()}:${srtStartTime.getUTCMinutes()}:${srtStartTime.getUTCSeconds()},${srtStartTime.getUTCMilliseconds()}`
-          const srtEndString = `${srtEndTime.getUTCHours()}:${srtEndTime.getUTCMinutes()}:${srtEndTime.getUTCSeconds()},${srtEndTime.getUTCMilliseconds()}`
+          const srtStartString = formatDateToSRTTime(srtStartTime)
+          const srtEndString = formatDateToSRTTime(srtEndTime)
 
           return `${sectionNumber}\n${srtStartString} --> ${srtEndString}\n${section.text}\n\n`
         })
         zip.file(file.audio_file.replace('.mp3', '.srt'), sections.join(''))
-        zip.generateAsync({ type: 'blob' }).then((content) => {
-          FileSaver.saveAs(content, `timestamps-${sessionId}.zip`)
-        })
+      })
+      zip.generateAsync({ type: 'blob' }).then((content) => {
+        FileSaver.saveAs(content, `timestamps-${sessionId}.zip`)
       })
 
       return
