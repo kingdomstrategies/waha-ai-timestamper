@@ -1,5 +1,6 @@
 # TimestampAudio.com - Front End
 
+![TimestampAudio.com Logo](./logo.png  "TimestampAudio.com Logo")
 
 The [TimeStampAudio.com](https://timestampaudio.com) web app generates timing data from any audio and corresponding text file, in the over [1,100 languages](https://dl.fbaipublicfiles.com/mms/misc/language_coverage_mms.html) supported by [Meta's MMS ASR model](https://ai.meta.com/blog/multilingual-model-speech-recognition/), outputting the results in JSON and SRT.
 
