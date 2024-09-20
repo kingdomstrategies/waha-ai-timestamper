@@ -328,6 +328,11 @@ export default function Home() {
           studies, podcasts, and media.
         </p>
       </div> */}
+      <p className="font-bold text-center text-p1 mb-4">
+        Our Backend is currently turned off right now; You can run the code
+        yourself from our github repos, or if you need help, feel free to
+        contact josh@waha.app
+      </p>
       {matches.length > 2 &&
       remainingTime !== undefined &&
       uploadSize !== undefined ? (
